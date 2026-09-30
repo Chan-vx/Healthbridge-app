@@ -1,0 +1,21 @@
+CITY CARE MULTISPECIALITY HOSPITAL
+
+123 MG Road, Chennai - 600001 | GSTIN: 33ABCDE1234F1Z5
+
+Patient: Ramesh Kumar Bill No: CCH-2026-00891
+
+Admission Date: 10-Aug-2026 Discharge Date: 15-Aug-2026
+ITEMIZED CHARGES
+
+Description Amount (Rs.)
+
+Room Rent (5 days @ Rs.5000) 25000.00
+Surgeon Fee - Appendectomy 60000.00
+Anaesthetist Fee 12000.00
+Paracetamol 500mg x10 200.00
+Paracetamol 500mg x10 Tab 200.00
+Blood Test - CBC 420.00
+CT Scan Chest 22000.00
+Nursing Charges (5 days) 5000.00
+Cosmetic Cream (non-medical) 1500.00
+TOTAL AMOUNT DUE: Rs. 126320.00
