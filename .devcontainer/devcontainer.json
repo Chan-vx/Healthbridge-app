@@ -1,14 +1,11 @@
 {
   // GitHub Codespaces: builds and starts the whole app (PostgreSQL, FastAPI, Next.js)
   // with Docker Compose, then opens the website on port 3000.
+  // The "universal" image already includes Docker, so nothing extra has to install.
   "name": "HealthBridge",
-  "image": "mcr.microsoft.com/devcontainers/base:ubuntu",
-  "features": {
-    "ghcr.io/devcontainers/features/docker-in-docker:2": {}
-  },
+  "image": "mcr.microsoft.com/devcontainers/universal:2",
   "hostRequirements": {
-    "cpus": 2,
-    "memory": "8gb"
+    "cpus": 2
   },
   "postCreateCommand": "docker compose up -d --build",
   "postStartCommand": "docker compose up -d",
