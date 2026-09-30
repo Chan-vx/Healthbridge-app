@@ -1,0 +1,21 @@
+{
+  // GitHub Codespaces: builds and starts the whole app (PostgreSQL, FastAPI, Next.js)
+  // with Docker Compose, then opens the website on port 3000.
+  "name": "HealthBridge",
+  "image": "mcr.microsoft.com/devcontainers/base:ubuntu",
+  "features": {
+    "ghcr.io/devcontainers/features/docker-in-docker:2": {}
+  },
+  "hostRequirements": {
+    "cpus": 2,
+    "memory": "8gb"
+  },
+  "postCreateCommand": "docker compose up -d --build",
+  "postStartCommand": "docker compose up -d",
+  "forwardPorts": [3000],
+  "portsAttributes": {
+    "3000": { "label": "HealthBridge website", "onAutoForward": "openBrowser" },
+    "8000": { "label": "HealthBridge API", "onAutoForward": "silent" },
+    "5432": { "label": "PostgreSQL", "onAutoForward": "silent" }
+  }
+}

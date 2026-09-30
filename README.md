@@ -12,15 +12,28 @@ The members' own inference code is imported unchanged (`cost/api/shap_explanatio
 `fraud/src/api.py`, `bill/bill_app/*`); `backend/app/services/ml.py` only adapts
 platform records to model inputs.
 
-## Run it
+## Run it online (GitHub Codespaces)
+
+[![Open in GitHub Codespaces](https://github.com/codespaces/badge.svg)](https://codespaces.new/Chan-vx/Healthbridge-app?quickstart=1)
+
+1. Click the button above (or **Code → Codespaces → Create codespace on main**).
+2. Wait about 5–8 minutes the first time while Docker builds everything; the website opens by itself on port 3000.
+3. To share it: open the **Ports** tab, right-click port **3000 → Port visibility → Public**, and send the link.
+
+A codespace stops after 30 minutes without use; open it again from **Code → Codespaces** and the app restarts with its data.
+
+## Run it on your own computer
 
 ```bash
 docker compose up --build
 ```
 
 - App: http://localhost:3000
-- API docs (Swagger): http://localhost:8000/docs
-- Health / model status: http://localhost:8000/api/health
+- API docs (Swagger): http://localhost:3000/docs
+- Health / model status: http://localhost:3000/api/health
+
+The website forwards `/api` and `/docs` to the FastAPI backend, so the whole app needs only one address
+(the backend is also reachable directly on port 8000).
 
 On first start the backend seeds demo data (`SEED_DEMO=true`). All demo accounts use
 the password **`Demo@1234`** — the login page has one-click buttons:

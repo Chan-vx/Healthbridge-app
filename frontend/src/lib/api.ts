@@ -1,4 +1,5 @@
-export const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+// Empty = same origin: Next.js forwards /api to the backend (see next.config.ts).
+export const API_URL = process.env.NEXT_PUBLIC_API_URL || "";
 
 export type Role = "patient" | "hospital" | "insurer" | "finance" | "admin";
 
@@ -286,7 +287,7 @@ export async function api<T>(path: string, options: { method?: string; body?: un
   try {
     res = await fetch(`${API_URL}${path}`, { method: options.method || (body ? "POST" : "GET"), headers, body });
   } catch {
-    throw new ApiError(0, `Cannot reach the HealthBridge API at ${API_URL}. Is the backend running?`);
+    throw new ApiError(0, "Cannot reach the HealthBridge API. Is the backend running?");
   }
   const text = await res.text();
   const data = text ? JSON.parse(text) : null;
