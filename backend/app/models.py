@@ -141,6 +141,24 @@ class Bill(Base):
     payment_status: Mapped[str] = mapped_column(String(20), default="unpaid")  # unpaid | paid | on_emi
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
 
+    # Authenticity (services/verification.py). New columns are nullable so app/migrate.py
+    # can add them to an existing database.
+    printed_patient_name: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
+    file_hash: Mapped[Optional[str]] = mapped_column(String(64), nullable=True)
+    content_hash: Mapped[Optional[str]] = mapped_column(String(64), nullable=True)
+    checks: Mapped[Optional[list]] = mapped_column(JSON, nullable=True, default=list)
+    authenticity: Mapped[Optional[str]] = mapped_column(String(10), nullable=True)  # pass | warn | fail
+    # hospital_uploaded | pending | confirmed | disputed | unverifiable (patient upload, unregistered hospital)
+    # | matched / mismatch (a patient's copy compared with the hospital's own record of the bill)
+    verification_status: Mapped[Optional[str]] = mapped_column(String(20), nullable=True, default="hospital_uploaded")
+    matched_bill_id: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)  # the hospital's record
+    # a hospital's own record, hidden from the patient (and insurer) until the patient uploads a
+    # matching copy or the hospital files a claim on it; None = visible
+    record_only: Mapped[Optional[bool]] = mapped_column(Boolean, nullable=True)
+    match_result: Mapped[Optional[dict]] = mapped_column(JSON, nullable=True)
+    verification_note: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    verified_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True), nullable=True)
+
     items: Mapped[list["BillItem"]] = relationship(back_populates="bill", cascade="all, delete-orphan")
     patient: Mapped[User] = relationship(foreign_keys=[patient_id])
     hospital: Mapped[Optional[Hospital]] = relationship()

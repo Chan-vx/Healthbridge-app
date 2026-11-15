@@ -7,11 +7,18 @@ below comes from running these files through the real OCR and models.
 
 1. Open **http://localhost:3000** and log in as the **patient** in the table (password `Demo@1234`).
 2. **My bills** → tab **Upload image / PDF**.
-3. **Hospital:** choose the hospital in the table (it must match the name on the bill — it sets the fair prices).
+3. **Hospital:** choose the hospital in the table (it must match the name on the bill — it sets the fair prices,
+   and that hospital is asked to confirm the bill).
 4. Choose the file → **Analyse bill**.
-5. On the result page: check the line-item table, "Who pays what" and "How to pay the balance".
-6. Click **File insurance claim** with the claim type and specialty listed → check the risk level.
-7. Optional: in **EMI calculator**, choose a plan or pay in full.
+5. On the result page: check "Is this bill genuine?" (all **Pass** for these genuine bills), the line-item table,
+   "Who pays what" and "How to pay the balance". The bill shows **Awaiting hospital**.
+6. **Hospital confirmation:** log in as the hospital (City Care = `citycare@hospital.in`, Sunrise =
+   `sunrise@hospital.in`) → the overview lists the bill under "awaiting your confirmation" → open it →
+   **Confirm, this is our bill**. (A patient cannot claim a bill the hospital has not confirmed.)
+7. Back as the patient, open the bill → **File insurance claim** with the claim type and specialty listed → check the risk level.
+8. Optional: in **EMI calculator**, choose a plan or pay in full.
+
+Upload each file once: a second upload of the same bill is caught as a repeat and cannot be claimed.
 
 | File | Log in as | Hospital to choose | Treatment |
 |---|---|---|---|
@@ -21,7 +28,7 @@ below comes from running these files through the real OCR and models.
 | `new_bill_04_ent_no_insurance_citycare.png` | meena@patient.in | City Care Multispeciality Hospital | ENT visit (no insurance) |
 | `new_bill_05_appendix_citycare.png` | priya@patient.in | City Care Multispeciality Hospital | Appendix surgery |
 | `new_bill_06_spine_inflated_citycare.png` | arjun@patient.in | City Care Multispeciality Hospital | Spine surgery (inflated) |
-| `new_bill_07_appendix_citycare.pdf` | priya@patient.in | City Care Multispeciality Hospital | Same as 05, as a PDF |
+| `new_bill_07_appendix_citycare.pdf` | priya@patient.in | City Care Multispeciality Hospital | Same as 05, as a PDF — upload **either** 05 or 07 |
 
 ## Expected results
 
@@ -67,7 +74,7 @@ below comes from running these files through the real OCR and models.
 - Then log in as **claims@suraksha.in** → **Claims queue**: this claim is at the top; open it to see the SHAP reasons, then approve or reject
 
 ### new_bill_07 — the appendix bill as a PDF
-- Exactly the same results as new_bill_05 — proves PDF upload works
+- The same prices, split and checks as new_bill_05 — proves PDF upload works. If 05 was already uploaded, this one is caught as the same bill again (bill number, dates, lines and amounts repeat) and cannot be claimed: that is the repeat detection, not an error.
 
 ## What these show in the viva
 
@@ -85,7 +92,7 @@ below comes from running these files through the real OCR and models.
 | Payment advice changes with income | 01 (Pay in Full) vs 04 (Hospital EMI) |
 | Fraud engine LOW vs HIGH | 01–05 vs 06 |
 
-Note: each upload is saved as a new bill, so uploading the same file twice creates two bills.
+Note: each upload is saved as a new bill, but a bill submitted a second time is flagged as a repeat (same file, bill number or contents) and cannot be claimed.
 
 ## Claim Decision Engine (insurer's "Recommended decision")
 

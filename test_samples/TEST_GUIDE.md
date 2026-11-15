@@ -7,10 +7,19 @@ Open the site at **http://localhost:3000**; every demo password is **`Demo@1234`
 > The numbers assume the demo profiles and policies are unchanged. If you edit a
 > patient's profile or issue them a new policy, their insurance split, payment
 > advice and fraud score change accordingly — that is expected.
+>
+> Start from **fresh demo data** before a run-through: `docker compose down -v` then
+> `docker compose up --build`. Each bill can be submitted **once**: uploading the same bill
+> again is caught as a repeat (see section 8), so a second run needs fresh data too.
 
 ---
 
 ## 1. Bill images (Member 3 OCR pipeline + Member 2 fraud engine)
+
+The bills use the layout most Indian hospitals print for an in-patient final bill: letterhead with
+GSTIN and registration number, patient and admission details (UHID, IP No, consultant, payer),
+a numbered table of charges by department with quantity and rate, totals with advance and
+balance, the amount in words, and signatures.
 
 **How to run each one:**
 1. Log in as the **hospital in the file name** (City Care = `citycare@hospital.in`, Sunrise = `sunrise@hospital.in`).
@@ -26,9 +35,15 @@ Open the site at **http://localhost:3000**; every demo password is **`Demo@1234`
 | `bill_03_duplicates_sunrise.png` | Sunrise | Ramesh Kumar | Two duplicate lines |
 | `bill_04_total_mismatch_citycare.png` | City Care | Meena Iyer | Printed total ≠ sum of items; patient has no insurance |
 | `bill_05_inflated_cardiac_citycare.png` | City Care | Arjun Reddy | Hugely inflated bill → HIGH fraud risk |
-| `bill_06_clean_sunrise.pdf` | Sunrise | Arjun Reddy | Same as bill 01, but as a PDF |
+| `bill_06_clean_sunrise.pdf` | Sunrise | Arjun Reddy | Same as bill 01, but as a PDF — upload **either** 01 or 06 |
+
+Uploading both bill_01 and bill_06 is caught as the same bill submitted twice (same bill number,
+dates, lines and amounts), and the second cannot be claimed. That is the repeat detection working.
 
 ### Expected results
+
+Every bill in this section is genuine and uploaded by the hospital, so the panel
+**"Is this bill genuine?"** shows **Pass** for all seven checks and the badge **From hospital**.
 
 **bill_01 — clean (and bill_06, the PDF version: identical)**
 - 6 line items read, total **₹13,470**, all six marked **Fair** (within about ±8% of the fair price)
@@ -69,6 +84,9 @@ Open the site at **http://localhost:3000**; every demo password is **`Demo@1234`
 - Then log in as **Suraksha** (`claims@suraksha.in`): the claim is at the **top of the queue**; open it to see PatientIncome and ClaimAmount as the main SHAP reasons, and approve or reject it.
 
 **Quick demo without a file:** Bills → **Use sample bill** runs Member 3's original bill (₹1,26,320: duplicate paracetamol 91.3%, CT scan +604.5%, insurance ₹91,356 / patient ₹34,964 for Ramesh).
+The demo data already contains this bill for Ramesh, so running it again shows the repeat detection:
+**Fail** on "File not uploaded before", "Bill number not used before" and "Not a copy of another bill",
+and the claim is refused.
 
 ---
 
@@ -116,15 +134,15 @@ Log in as a patient (e.g. **Ramesh**) → **Cost estimate** → enter the profil
 
 | Age | Sex | BMI | Children | Smoker | Region | Expected estimate | Biggest SHAP factor |
 |---|---|---|---|---|---|---|---|
-| 19 | female | 22.0 | 0 | no | northwest | **$3,107** | Age (lowers, −$4,134) |
-| 30 | male | 26.5 | 1 | no | southeast | **$4,866** | Smoker = no (lowers, −$3,658) |
-| 45 | male | 31.2 | 2 | no | southeast | **$9,155** | Smoker = no (lowers, −$5,509) |
-| 45 | male | 31.2 | 2 | **yes** | southeast | **$41,937** | Smoker = yes (**raises, +$22,010**) |
-| 60 | female | 35.0 | 3 | yes | southwest | **$46,639** | Smoker = yes (raises, +$20,626) |
-| 52 | female | 24.0 | 0 | no | northeast | **$13,628** | Age (raises, +$4,275) |
+| 19 | female | 22.0 | 0 | no | northwest | **₹2,57,851** | Age (lowers, −₹3,43,119) |
+| 30 | male | 26.5 | 1 | no | southeast | **₹4,03,906** | Smoker = no (lowers, −₹3,03,577) |
+| 45 | male | 31.2 | 2 | no | southeast | **₹7,59,890** | Smoker = no (lowers, −₹4,57,258) |
+| 45 | male | 31.2 | 2 | **yes** | southeast | **₹34,80,794** | Smoker = yes (**raises, +₹18,26,837**) |
+| 60 | female | 35.0 | 3 | yes | southwest | **₹38,71,007** | Smoker = yes (raises, +₹17,11,934) |
+| 52 | female | 24.0 | 0 | no | northeast | **₹11,31,084** | Age (raises, +₹3,54,837) |
 
 The best demo: rows 3 and 4 are the same person except smoking — the estimate jumps from
-$9,155 to $41,937 and the smoker bar flips from blue to orange. Also check the line under the
+₹7,59,890 to ₹34,80,794 and the smoker bar flips from blue to orange. Also check the line under the
 chart: base value + contributions = prediction (SHAP additivity).
 
 > Remember to set Ramesh back to his original profile afterwards (45, male, 31.2, 2, no, southeast,
@@ -147,12 +165,20 @@ Formula check: EMI = P·r·(1+r)ⁿ / ((1+r)ⁿ − 1), r = 13.5 / 12 / 100 = 0.
 ## 5. Insurance workflow
 
 1. **Issue a policy:** log in as **Suraksha** → **Policies** → choose **Meena Iyer**, set **Deductible to 0**
-   (keep 20% co-insurance, ₹500 copay) → **Issue policy**. With the default ₹5,000 deductible her ₹4,550 bill
+   (keep 20% co-insurance, ₹500 copay) → **Issue policy**. With the default ₹5,000 deductible her small bill
    would be fully under the deductible and there would be nothing to claim.
-2. Log in as **City Care**, upload `bill_04` for Meena again → now insurance pays **₹3,140** and Meena pays
-   **₹1,410** (20% co-insurance ₹910 + ₹500 copay), and **File insurance claim** appears.
-3. Back as **Suraksha** → **Claims queue** → open the claim → **Approve** (you can lower the amount) → **Mark settled**.
-4. Log in as **City Care** → Overview: "Insurance settled" has increased.
+2. Log in as **City Care**, upload `new_bills/new_bill_04_ent_no_insurance_citycare.png` for Meena (₹4,670; use a
+   bill she has not submitted before, since a repeat cannot be claimed) → insurance pays **₹3,236** and Meena pays
+   **₹1,434** (20% co-insurance ₹934 + ₹500 copay), and **File insurance claim** appears.
+3. "Is this bill genuine?" shows a **Warning** on Treatment dates: *treatment on 12 Oct 2026 is before the policy
+   started*. Buying insurance after being treated is a classic insurance fraud, so the insurer's recommendation
+   becomes **Approve after verification** rather than Approve in full.
+4. Back as **Suraksha** → **Claims queue** → open the claim → **Approve** (you can lower the amount) → **Mark settled**.
+5. Log in as **City Care** → Overview: "Insurance settled" has increased.
+6. Back as **Suraksha** → **Claims history**: the claim is listed with its decision date, approved amount and
+   note. The page totals what was approved, paid and rejected, shows how often the insurer followed the
+   recommended decision, and can download the history as CSV. The **Claims queue** now holds only claims
+   that still need a decision or settlement.
 
 ---
 
@@ -166,14 +192,18 @@ Formula check: EMI = P·r·(1+r)ⁿ / ((1+r)ⁿ − 1), r = 13.5 / 12 / 100 = 0.
 | Register a new account (patient / hospital / insurer) | Works; admin and finance cannot be self-registered |
 | Insurer tries to settle a claim that is only "submitted" | Refused with a clear message |
 | Open `http://localhost:8000/docs` → try `GET /api/dashboard/finance` without logging in | 401 Unauthorized |
+| As a patient, upload a bill and try to file a claim before the hospital confirms it | No claim button; the API refuses with "The hospital has not confirmed this bill yet" |
+| As one hospital, try to confirm a bill filed under the other hospital | "Bill not found." (hospitals only see their own bills) |
+| Upload a file larger than 10 MB | "The file is larger than 10 MB." |
 
 ---
 
 ## Re-running the checks yourself
 
 ```bash
-# regenerate the images
+# regenerate the bills (standard hospital layout from bill_template.py; needs Arial or DejaVu Sans)
 backend/.venv/Scripts/python test_samples/make_samples.py
+backend/.venv/Scripts/python test_samples/make_fake_samples.py
 
 # run all samples through the real models inside the backend container (Git Bash: set MSYS_NO_PATHCONV=1 first)
 docker compose cp test_samples backend:/srv/test_samples
@@ -197,7 +227,26 @@ again to the corrected bill.
 | bill_05 inflated cardiac | **Hold for investigation** (fraud risk HIGH) |
 | Demo claim CLM-2026-00001 (Ramesh) | **Approve a reduced amount**: ₹76,719 instead of ₹91,356 |
 | Demo claim CLM-2026-00003 (Priya) | **Reject: nothing payable** (after removing the overcharge and duplicate, the rest is under her deductible) |
+| Any bill that fails an authenticity check (e.g. wrong patient name) | **Hold for investigation** |
+| Any bill with an authenticity warning (e.g. treatment before the policy started) | **Approve after verification** |
+
+The claim page also lists two new checks: **Bill confirmed by hospital** and **Bill authenticity** (section 8).
 
 Why a decision engine and not a trained model: Member 2's claim-approval model (`src/22_claim_approval_model.py`)
 reaches 36% accuracy on three balanced classes (guessing gives 34%, ROC-AUC 0.54) because `ClaimStatus` in the
 dataset is not related to any claim feature. The engine uses signals that really do decide payment.
+
+---
+
+## 8. Fake bills (is the bill genuine?)
+
+The checks above judge **prices** and **claim risk**. A fake bill with fair prices passes all of
+them, so every bill is also checked for **authenticity**: printed hospital and patient names
+against the accounts, repeated files, bill numbers and copies, impossible dates, treatment before
+the policy started, and signs of editing in the file. A bill a **patient** uploads is looked up by its
+bill number and compared line by line with the bill the **hospital itself** submitted; without such a
+record, it must be
+**confirmed by the hospital** before it can be claimed.
+
+Seven fake bills and step-by-step expected results are in
+[`fake_bills/FAKE_BILLS.md`](fake_bills/FAKE_BILLS.md).

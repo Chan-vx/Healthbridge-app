@@ -5,7 +5,7 @@ import AppShell from "@/components/AppShell";
 import { ShapBars } from "@/components/charts";
 import { Alert, Loading, PageHead, Panel, useApi } from "@/components/ui";
 import { api, CostEstimate, Profile } from "@/lib/api";
-import { FEATURE_LABELS, inr, usd } from "@/lib/format";
+import { FEATURE_LABELS, inr } from "@/lib/format";
 
 function Estimate() {
   const { data: profile, error } = useApi<Profile>("/api/patients/me/profile");
@@ -43,7 +43,7 @@ function Estimate() {
     }
   }
 
-  const shapTotal = estimate ? estimate.shap.reduce((s, x) => s + x.shap_usd, 0) : 0;
+  const shapTotal = estimate ? estimate.shap.reduce((s, x) => s + x.shap_inr, 0) : 0;
 
   return (
     <>
@@ -95,18 +95,18 @@ function Estimate() {
           </form>
         </Panel>
 
-        <Panel title="Estimate" hint="Model trained on the US Medical Cost dataset, so the figure is in US dollars; the rupee value is a direct conversion.">
+        <Panel title="Estimate" hint="In rupees. The model learnt from a public medical-cost dataset; its figures are converted to rupees at a fixed rate.">
           {estimate ? (
             <div className="stack">
               <div className="risk-dial">
-                <span className="big">{usd(estimate.predicted_usd)}</span>
-                <span className="muted">per year · ≈ {inr(estimate.predicted_inr)}</span>
+                <span className="big">{inr(estimate.predicted_inr)}</span>
+                <span className="muted">expected medical expenses per year</span>
               </div>
               <ShapBars
-                items={estimate.shap.map((s) => ({ label: FEATURE_LABELS[s.feature] || s.feature, detail: String(s.value ?? ""), value: s.shap_usd }))}
-                format={(n) => usd(n)} upLabel="Raises the estimate" downLabel="Lowers the estimate" />
+                items={estimate.shap.map((s) => ({ label: FEATURE_LABELS[s.feature] || s.feature, detail: String(s.value ?? ""), value: s.shap_inr }))}
+                format={(n) => inr(n)} upLabel="Raises the estimate" downLabel="Lowers the estimate" />
               <p className="note-line">
-                Base value (average patient) {usd(estimate.predicted_usd - shapTotal)} + contributions {usd(shapTotal)} = {usd(estimate.predicted_usd)}.
+                Base value (average patient) {inr(estimate.predicted_inr - shapTotal)} + contributions {inr(shapTotal)} = {inr(estimate.predicted_inr)}.
                 SHAP values always add up to the prediction.
               </p>
             </div>

@@ -2,15 +2,138 @@
 
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
-import { FormEvent, useState } from "react";
+import { FormEvent, useEffect, useState } from "react";
 import AppShell from "@/components/AppShell";
 import { SplitBar } from "@/components/charts";
-import { Alert, ClaimStatusBadge, Kpi, Loading, PageHead, Panel, PaymentBadge, SeverityBadge, useApi } from "@/components/ui";
-import { api, BillDetail, Claim, EMIPlan, User } from "@/lib/api";
+import {
+  Alert, CheckBadge, ClaimStatusBadge, Kpi, Loading, PageHead, Panel, PaymentBadge, SeverityBadge, useApi, VerificationBadge,
+} from "@/components/ui";
+import { api, apiObjectUrl, BillDetail, Claim, EMIPlan, User } from "@/lib/api";
 import { date, inr, inrPaise, titleCase } from "@/lib/format";
 
 const SPECIALTIES = ["General Practice", "Cardiology", "Neurology", "Orthopedics", "Pediatrics"];
 const CLAIM_TYPES = ["Inpatient", "Outpatient", "Emergency", "Routine"];
+// the hospital submitted the bill or confirmed it: only these can be claimed
+const CONFIRMED = ["hospital_uploaded", "confirmed"];
+const DUPLICATE_CHECKS = ["duplicate_file", "duplicate_bill_number", "duplicate_content"];
+
+function AuthenticityPanel({ bill }: { bill: BillDetail }) {
+  const checks = bill.checks || [];
+  return (
+    <Panel title="Is this bill genuine?" flush actions={<CheckBadge status={bill.authenticity} />}
+      hint="Checked against HealthBridge records and the uploaded file. Price checks are separate (below).">
+      {checks.length ? (
+        <div className="table-wrap">
+          <table>
+            <thead><tr><th>Check</th><th>Result</th><th>Detail</th></tr></thead>
+            <tbody>
+              {checks.map((c) => (
+                <tr key={c.key}><td>{c.name}</td><td><CheckBadge status={c.status} /></td><td className="muted">{c.detail}</td></tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      ) : <div className="panel-body muted">This bill was analysed before the authenticity checks were added.</div>}
+    </Panel>
+  );
+}
+
+const DIFF_LABEL: Record<string, string> = {
+  amount: "Amount changed", missing: "Missing from this copy", added: "Not on the hospital's bill",
+  total: "Total", date: "Date changed",
+};
+
+function show(value: number | string | null) {
+  return value == null ? "—" : typeof value === "number" ? inr(value) : value;
+}
+
+/** The patient's copy next to the bill the hospital itself submitted under the same number. */
+function RecordPanel({ bill }: { bill: BillDetail }) {
+  const m = bill.match_result;
+  const diffs = m?.differences || [];
+  return (
+    <Panel title="Compared with the hospital's record" flush
+      hint={`Bill number read by OCR (${bill.bill_number}) looked up among the bills the hospital submitted; matched to its bill ${m?.record_number}.`}
+      actions={<Link className="btn ghost small" href={`/bills/${bill.matched_bill_id}`}>Open hospital&apos;s record</Link>}>
+      {diffs.length ? (
+        <div className="table-wrap">
+          <table>
+            <thead><tr><th>Line</th><th>Difference</th><th className="num">This copy</th><th className="num">Hospital&apos;s record</th></tr></thead>
+            <tbody>
+              {diffs.map((d, i) => (
+                <tr key={i}>
+                  <td>{d.description}</td><td><span className="badge b-bad">{DIFF_LABEL[d.kind] || d.kind}</span></td>
+                  <td className="num">{show(d.copy)}</td><td className="num">{show(d.record)}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      ) : <div className="panel-body muted">Every date, line and amount matches the hospital&apos;s record.</div>}
+    </Panel>
+  );
+}
+
+function ConfirmPanel({ bill, onDone }: { bill: BillDetail; onDone: (b: BillDetail) => void }) {
+  const [note, setNote] = useState("");
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  async function decide(action: "confirm" | "dispute") {
+    setBusy(true);
+    setError(null);
+    try {
+      onDone(await api<BillDetail>(`/api/bills/${bill.id}/verification`, { body: { action, note: note || undefined } }));
+    } catch (err) {
+      setError((err as Error).message);
+      setBusy(false);
+    }
+  }
+  return (
+    <Panel title="Did your hospital issue this bill?"
+      hint={`${bill.patient_name} uploaded it and named your hospital. Check it against your own billing records before it can be claimed.`}>
+      <div className="form">
+        <label className="field">Note (required if you dispute it)
+          <textarea id="verify_note" rows={2} value={note} onChange={(e) => setNote(e.target.value)} style={{ fontFamily: "inherit" }}
+            placeholder="e.g. No admission for this patient on these dates" />
+        </label>
+        {error && <Alert>{error}</Alert>}
+        <div className="btn-row">
+          <button className="btn" disabled={busy} onClick={() => decide("confirm")}>Confirm, this is our bill</button>
+          <button className="btn danger" disabled={busy} onClick={() => decide("dispute")}>Dispute</button>
+        </div>
+      </div>
+    </Panel>
+  );
+}
+
+function ErrorLevelPanel({ bill }: { bill: BillDetail }) {
+  const [url, setUrl] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  useEffect(() => () => { if (url) URL.revokeObjectURL(url); }, [url]);
+  async function load() {
+    setError(null);
+    try {
+      setUrl(await apiObjectUrl(`/api/bills/${bill.id}/error-level`));
+    } catch (err) {
+      setError((err as Error).message);
+    }
+  }
+  return (
+    <Panel title="Error level analysis" actions={!url && <button className="btn ghost small" onClick={load}>Show</button>}
+      hint="The photo re-saved as JPEG; brighter means it changed more.">
+      {error && <Alert>{error}</Alert>}
+      {url ? (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img src={url} alt="Error level analysis of the bill photo" style={{ width: "100%", borderRadius: 6, border: "1px solid var(--line)" }} />
+      ) : (
+        <span className="muted small">
+          Numbers pasted into a photo afterwards often glow brighter or rougher than the text around them. This is a picture for a
+          person to judge, not an automatic result.
+        </span>
+      )}
+    </Panel>
+  );
+}
 
 function FileClaim({ bill, onDone }: { bill: BillDetail; onDone: (c: Claim) => void }) {
   const [form, setForm] = useState({ claim_type: "Inpatient", provider_specialty: "General Practice", submission_method: "Online" });
@@ -111,18 +234,66 @@ function BillView({ user }: { user: User }) {
 
   const c = bill.cost_breakdown as Record<string, number>;
   const dupes = bill.items.filter((i) => i.duplicate_of);
-  const canClaim = (user.role === "hospital" || user.role === "patient") && !bill.claim_id && bill.policy_id && bill.insurance_pays > 0;
+  const status = bill.verification_status || "hospital_uploaded";
+  const repeat = (bill.checks || []).find((k) => DUPLICATE_CHECKS.includes(k.key) && k.status === "fail");
+  const hospitalName = bill.registered_hospital || "The hospital";
+  const insured = (user.role === "hospital" || user.role === "patient") && !bill.claim_id && bill.policy_id && bill.insurance_pays > 0;
+  // a copy that matches the hospital's record is claimed here too; the claim is filed on that record
+  const canClaim = insured && (CONFIRMED.includes(status) || status === "matched") && !repeat;
 
   return (
     <>
       <PageHead title={bill.hospital_name || "Bill"}
         sub={`${bill.patient_name} · ${bill.bill_number ? `Bill ${bill.bill_number} · ` : ""}${bill.admission_date ? `${bill.admission_date} → ${bill.discharge_date} · ` : ""}analysed ${date(bill.created_at)} · ${titleCase(bill.city_tier)}, ${bill.hospital_type} pricing`}>
+        <VerificationBadge status={bill.verification_status} recordOnly={bill.record_only} />
         <ClaimStatusBadge status={bill.claim_status} />
         <PaymentBadge status={bill.payment_status} />
-        {bill.claim_id && <Link className="btn ghost small" href={`/claims/${bill.claim_id}`}>View claim</Link>}
+        {bill.claim_id && (user.role === "insurer" && ["submitted", "approved"].includes(bill.claim_status || "")
+          ? <Link className="btn small" href={`/claims/${bill.claim_id}`}>{bill.claim_status === "submitted" ? "Decide on claim" : "Settle claim"}</Link>
+          : <Link className="btn ghost small" href={`/claims/${bill.claim_id}`}>View claim</Link>)}
       </PageHead>
 
-      {bill.total_mismatch && <div style={{ marginBottom: 12 }}><Alert>The printed total ({inr(bill.stated_total)}) does not match the sum of the line items ({inr(bill.total_billed)}).</Alert></div>}
+      <div className="stack" style={{ gap: 8, marginBottom: 12 }}>
+        {bill.record_only && (
+          <Alert kind="info">
+            In your hospital&apos;s records only: {bill.patient_name} does not see this bill yet. It appears in their account when they
+            upload a copy that matches it, or when a claim is filed on it.
+          </Alert>
+        )}
+        {status === "pending" && user.role !== "hospital" && (
+          <Alert kind="info">
+            {user.role === "patient"
+              ? `Waiting for ${hospitalName} to confirm this bill. You can file an insurance claim once they do.`
+              : `Uploaded by the patient; ${hospitalName} has not confirmed it yet.`}
+          </Alert>
+        )}
+        {status === "disputed" && (
+          <Alert>{hospitalName} disputed this bill{bill.verification_note ? `: “${bill.verification_note}”` : "."} It cannot be claimed.</Alert>
+        )}
+        {status === "unverifiable" && (
+          <Alert kind="info">No hospital on HealthBridge was chosen for this bill, so it cannot be confirmed or claimed.</Alert>
+        )}
+        {status === "confirmed" && bill.verified_at && (
+          <Alert kind="ok">{hospitalName} confirmed this bill on {date(bill.verified_at)}.</Alert>
+        )}
+        {status === "matched" && bill.matched_bill_id && (
+          <Alert kind="ok">
+            This is a copy of bill {bill.match_result?.record_number} that {hospitalName} submitted itself, and it matches
+            exactly, so it is genuine. {bill.claim_id ? "The insurance claim for this bill is on the hospital's record." : "You can file the insurance claim below; it is filed on the hospital's record, so the bill is never claimed twice."}{" "}
+            <Link href={`/bills/${bill.matched_bill_id}`}>Open the hospital&apos;s record</Link>
+          </Alert>
+        )}
+        {status === "mismatch" && (
+          <Alert>
+            This copy differs from {hospitalName}&apos;s own record of bill {bill.match_result?.record_number} in{" "}
+            {bill.match_result?.differences?.length} place(s), so it cannot be claimed. See the comparison below.
+          </Alert>
+        )}
+        {repeat && <Alert>This bill repeats an earlier one and cannot be claimed: {repeat.detail}</Alert>}
+        {bill.total_mismatch && <Alert>The printed total ({inr(bill.stated_total)}) does not match the sum of the line items ({inr(bill.total_billed)}).</Alert>}
+      </div>
+
+      {user.role === "hospital" && status === "pending" && <div style={{ marginBottom: 16 }}><ConfirmPanel bill={bill} onDone={setData} /></div>}
 
       <div className="kpis">
         <Kpi label="Total billed" value={inr(bill.total_billed)} sub={`${bill.items.length} line items · ${bill.source === "ocr" ? "read by OCR" : bill.source === "text" ? "parsed from text" : "entered manually"}`} />
@@ -133,6 +304,9 @@ function BillView({ user }: { user: User }) {
       </div>
 
       <div className="stack">
+        <AuthenticityPanel bill={bill} />
+        {bill.matched_bill_id && <RecordPanel bill={bill} />}
+
         <Panel title="Line-item check" flush
           hint="Fair price from the Random Forest model; anomaly flag from the Isolation Forest; duplicates by text similarity ≥ 82%.">
           <div className="table-wrap">
@@ -212,6 +386,7 @@ function BillView({ user }: { user: User }) {
               {showRaw ? <pre className="raw">{bill.raw_text}</pre> : <span className="muted small">The text Tesseract read from the bill, before parsing.</span>}
             </Panel>
           )}
+          {bill.error_level_available && user.role !== "patient" && <ErrorLevelPanel bill={bill} />}
         </div>
         {dupes.length > 0 && user.role !== "patient" && (
           <p className="note-line">Duplicate lines are counted in the flagged amount; they are not removed from the bill automatically.</p>

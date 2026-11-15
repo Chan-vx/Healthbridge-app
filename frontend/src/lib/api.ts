@@ -88,8 +88,29 @@ export interface BillSummary {
   total_mismatch: boolean;
   payment_status: "unpaid" | "paid" | "on_emi";
   created_at: string;
+  verification_status: VerificationStatus | null;
+  authenticity: "pass" | "warn" | "fail" | null;
+  registered_hospital: string | null;
+  record_only?: boolean | null;
   patient_name?: string;
   claim_status?: string | null;
+}
+
+export type VerificationStatus = "hospital_uploaded" | "pending" | "confirmed" | "disputed" | "unverifiable" | "matched" | "mismatch";
+
+/** A patient's copy compared with the hospital's own record of the same bill. */
+export interface RecordMatch {
+  status: "matched" | "mismatch" | "not_found" | "other_patient";
+  record_id?: number;
+  record_number?: string;
+  differences?: { kind: "amount" | "missing" | "added" | "total" | "date"; description: string; copy: number | string | null; record: number | string | null }[];
+}
+
+export interface BillCheck {
+  key: string;
+  name: string;
+  status: "pass" | "warn" | "fail" | "skip" | "waiting";
+  detail: string;
 }
 
 export interface Recommendation {
@@ -121,6 +142,13 @@ export interface BillDetail extends BillSummary {
   recommendations: Recommendation[];
   items: BillItem[];
   policy_id: number | null;
+  printed_patient_name: string | null;
+  checks: BillCheck[] | null;
+  verification_note: string | null;
+  verified_at: string | null;
+  matched_bill_id: number | null;
+  match_result: RecordMatch | null;
+  error_level_available: boolean;
   claim_id: number | null;
   payment: null | { plan: string; principal: number; annual_rate: number; tenure_months: number; monthly_emi: number; total_payment: number; created_at: string };
 }
@@ -173,6 +201,7 @@ export interface Claim {
   patient_name?: string;
   hospital_name?: string | null;
   insurer_name?: string;
+  fraud_threshold?: number | null;
   advice?: Advice | null;
 }
 
@@ -271,6 +300,17 @@ function errorMessage(body: unknown, status: number): string {
     }
   }
   return `Request failed (${status}).`;
+}
+
+/** GET a binary file (e.g. an image) with the session token; returns an object URL for <img src>. */
+export async function apiObjectUrl(path: string): Promise<string> {
+  const session = getSession();
+  const res = await fetch(`${API_URL}${path}`, { headers: session ? { Authorization: `Bearer ${session.token}` } : {} });
+  if (!res.ok) {
+    const text = await res.text();
+    throw new ApiError(res.status, errorMessage(text ? JSON.parse(text) : null, res.status));
+  }
+  return URL.createObjectURL(await res.blob());
 }
 
 export async function api<T>(path: string, options: { method?: string; body?: unknown; form?: FormData } = {}): Promise<T> {

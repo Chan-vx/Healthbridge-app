@@ -1,28 +1,17 @@
 """
-Generates the test bill images/PDF in this folder, in the same layout as
-Member 3's sample_bill_1.png so the OCR parser can read them.
+Generates the test bill images/PDF in this folder in a standard hospital bill layout
+(bill_template.py) that the OCR parser reads.
 
     python make_samples.py
 """
 
 import os
 
-from PIL import Image, ImageDraw, ImageFont
+from PIL import Image
+
+from bill_template import render_bill
 
 OUT_DIR = os.path.dirname(os.path.abspath(__file__))
-
-FONT_CANDIDATES = [
-    "C:/Windows/Fonts/arial.ttf",
-    "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf",
-    "/Library/Fonts/Arial.ttf",
-]
-
-
-def font(size):
-    for path in FONT_CANDIDATES:
-        if os.path.exists(path):
-            return ImageFont.truetype(path, size)
-    return ImageFont.load_default()
 
 
 BILLS = {
@@ -148,34 +137,77 @@ NEW_BILLS = {
 
 
 def draw_bill(spec) -> Image.Image:
-    width, height = 900, 1200
-    img = Image.new("RGB", (width, height), color="white")
-    d = ImageDraw.Draw(img)
-    title, header, body = font(28), font(18), font(16)
+    return render_bill(spec)[0]
 
-    y = 40
-    d.text((40, y), spec["hospital"], font=title, fill="black"); y += 40
-    d.text((40, y), spec["address"], font=body, fill="black"); y += 40
-    d.line((40, y, 860, y), fill="black", width=2); y += 20
-    d.text((40, y), f"Patient: {spec['patient']}        Bill No: {spec['bill_no']}", font=header, fill="black"); y += 30
-    d.text((40, y), f"Admission Date: {spec['admission']}   Discharge Date: {spec['discharge']}", font=header, fill="black"); y += 40
-    d.line((40, y, 860, y), fill="black", width=1); y += 20
-    d.text((40, y), "ITEMIZED CHARGES", font=header, fill="black"); y += 35
-    d.text((40, y), "Description", font=body, fill="black")
-    d.text((650, y), "Amount (Rs.)", font=body, fill="black"); y += 25
-    d.line((40, y, 860, y), fill="gray", width=1); y += 15
 
-    total = 0.0
-    for desc, amt in spec["items"]:
-        d.text((40, y), desc, font=body, fill="black")
-        d.text((650, y), f"{amt:.2f}", font=body, fill="black")
-        total += amt
-        y += 28
-    y += 10
-    d.line((40, y, 860, y), fill="black", width=2); y += 20
-    printed = spec.get("stated_total", total)
-    d.text((40, y), f"TOTAL AMOUNT DUE: Rs. {printed:.2f}", font=header, fill="black")
-    return img
+
+
+# Two more bills for Ramesh Kumar (saved in ramesh_bills/)
+RAMESH_BILLS = {
+    "ramesh_01_gastroenteritis_citycare.png": dict(
+        hospital=CC[0], address=CC[1], patient="Ramesh Kumar", bill_no="CCH-2026-02411",
+        admission="02-Nov-2026", discharge="04-Nov-2026",
+        items=[
+            ("Room Rent (2 days)", 10100), ("Nursing Charges (2 days)", 4050),
+            ("Consultation - Gastroenterologist", 1000), ("Blood Test - Serum Electrolytes", 3300),
+            ("Ultrasound Abdomen Scan", 3400), ("Injection Ondansetron 4mg", 250),
+            ("Medicines - ORS and Probiotic", 240),
+        ],
+    ),
+    "ramesh_02_wrist_fracture_sunrise.png": dict(
+        hospital=SG[0], address=SG[1], patient="Ramesh Kumar", bill_no="SGH-2026-02438",
+        admission="08-Nov-2026", discharge="11-Nov-2026",
+        items=[
+            ("Room Rent (3 days)", 9000), ("Nursing Charges (3 days)", 3600),
+            ("Surgery - Wrist Fracture Fixation", 34000), ("Anaesthetist Fee", 9000),
+            ("X-Ray Wrist", 2000), ("Consultation - Orthopaedic", 600),
+            ("Tablet Aceclofenac 100mg", 150),
+        ],
+    ),
+    "ramesh_03_kidney_stone_citycare.png": dict(
+        hospital=CC[0], address=CC[1], patient="Ramesh Kumar", bill_no="CCH-2026-02466",
+        admission="20-Oct-2026", discharge="23-Oct-2026",
+        items=[
+            ("Room Rent (3 days)", 15150), ("Nursing Charges (3 days)", 6060),
+            ("Procedure - Ureteroscopy Stone Removal", 58000), ("Anaesthetist Fee", 11000),
+            ("CT Scan KUB", 3350), ("Consultation - Urologist", 1000), ("Medicines - Tamsulosin capsules", 260),
+        ],
+    ),
+    "ramesh_04_typhoid_sunrise.png": dict(
+        hospital=SG[0], address=SG[1], patient="Ramesh Kumar", bill_no="SGH-2026-02472",
+        admission="26-Oct-2026", discharge="30-Oct-2026",
+        items=[
+            ("Room Rent (4 days)", 12000), ("Nursing Charges (4 days)", 4800), ("Consultation - Physician", 600),
+            ("Blood Test - Widal", 2000), ("Blood Culture Test", 2100), ("Injection Ceftriaxone 1g", 160),
+            ("Tablet Azithromycin 500mg", 150),
+        ],
+    ),
+    "ramesh_05_pneumonia_citycare.png": dict(
+        hospital=CC[0], address=CC[1], patient="Ramesh Kumar", bill_no="CCH-2026-02489",
+        admission="14-Sep-2026", discharge="17-Sep-2026",
+        items=[
+            ("Room Rent (3 days)", 15300), ("Nursing Charges (3 days)", 6000), ("Consultation - Pulmonologist", 1000),
+            ("X-Ray Chest", 3300), ("Blood Test - CBC", 3250), ("Injection Piperacillin 4.5g", 270),
+            ("Nebuliser medicine - Budesonide", 250),
+        ],
+    ),
+    "ramesh_06_cataract_daycare_sunrise.png": dict(
+        hospital=SG[0], address=SG[1], patient="Ramesh Kumar", bill_no="SGH-2026-02495",
+        admission="22-Sep-2026", discharge="22-Sep-2026",
+        items=[
+            ("Procedure - Cataract Surgery (Phaco with IOL)", 34500), ("Consultation - Ophthalmologist", 600),
+            ("Diagnostic - Biometry Scan", 2000), ("Medicines - Eye drops", 150),
+        ],
+    ),
+}
+
+
+def write_ramesh_bills():
+    out = os.path.join(OUT_DIR, "ramesh_bills")
+    os.makedirs(out, exist_ok=True)
+    for name, spec in RAMESH_BILLS.items():
+        draw_bill(spec).save(os.path.join(out, name))
+        print("saved ramesh_bills/" + name)
 
 
 if __name__ == "__main__":
@@ -184,7 +216,7 @@ if __name__ == "__main__":
         img.save(os.path.join(OUT_DIR, name))
         print("saved", name)
     # the clean bill again as a PDF, to test the PDF path of the OCR
-    draw_bill(BILLS["bill_01_clean_sunrise.png"]).save(os.path.join(OUT_DIR, "bill_06_clean_sunrise.pdf"), "PDF", resolution=100)
+    draw_bill(BILLS["bill_01_clean_sunrise.png"]).save(os.path.join(OUT_DIR, "bill_06_clean_sunrise.pdf"), "PDF", resolution=150)
     print("saved bill_06_clean_sunrise.pdf")
     new_dir = os.path.join(OUT_DIR, "new_bills")
     os.makedirs(new_dir, exist_ok=True)
@@ -193,5 +225,6 @@ if __name__ == "__main__":
         print("saved new_bills/" + name)
     # the appendix bill also as a PDF
     draw_bill(NEW_BILLS["new_bill_05_appendix_citycare.png"]).save(
-        os.path.join(new_dir, "new_bill_07_appendix_citycare.pdf"), "PDF", resolution=100)
+        os.path.join(new_dir, "new_bill_07_appendix_citycare.pdf"), "PDF", resolution=150)
     print("saved new_bills/new_bill_07_appendix_citycare.pdf")
+    write_ramesh_bills()

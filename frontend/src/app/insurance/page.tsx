@@ -4,12 +4,13 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import AppShell from "@/components/AppShell";
 import { MonthlyRiskChart } from "@/components/charts";
-import { AdviceBadge, Empty, Kpi, Loading, PageHead, Panel, RiskBadge, useApi } from "@/components/ui";
+import { AdviceBadge, ClaimAction, Empty, Kpi, Loading, PageHead, Panel, RiskBadge, useApi } from "@/components/ui";
 import { Claim } from "@/lib/api";
-import { date, inr, titleCase } from "@/lib/format";
+import { date, inr, pct, titleCase } from "@/lib/format";
 
 interface InsurerDash {
   insurer: { name: string };
+  fraud_threshold: number | null;
   active_policies: number;
   claims: {
     count: number; by_status: Record<string, number>; by_risk: Record<string, number>; claimed_amount: number;
@@ -34,16 +35,16 @@ function Dashboard() {
       <div className="kpis">
         <Kpi label="Claims received" value={c.count} sub={`${data.active_policies} active policies`} />
         <Kpi label="Awaiting decision" value={c.by_status.submitted} tone={c.by_status.submitted ? "warn" : undefined} />
-        <Kpi label="High-risk claims" value={c.by_risk.HIGH} tone={c.by_risk.HIGH ? "bad" : undefined} sub={`${c.fraud_flagged} over the 5% fraud threshold`} />
+        <Kpi label="High-risk claims" value={c.by_risk.HIGH} tone={c.by_risk.HIGH ? "bad" : undefined} sub={`${c.fraud_flagged} over the ${pct(data.fraud_threshold, 1)} fraud threshold`} />
         <Kpi label="Approved" value={inr(c.approved_amount)} sub={c.approval_rate == null ? undefined : `${Math.round(c.approval_rate * 100)}% approval rate`} />
         <Kpi label="Settled" value={inr(c.settled_amount)} tone="good" sub={`of ${inr(c.claimed_amount)} claimed`} />
       </div>
 
       <div className="stack">
-        <Panel title="Investigation queue" flush hint="Open claims, highest hybrid risk first" actions={<Link className="btn ghost small" href="/claims">Full queue</Link>}>
+        <Panel title="Investigation queue" flush hint="Open claims, highest hybrid risk first" actions={<div className="btn-row"><Link className="btn ghost small" href="/claims">Full queue</Link><Link className="btn ghost small" href="/insurance/history">History</Link></div>}>
           {data.queue.length ? (
             <div className="table-wrap"><table>
-              <thead><tr><th>Claim</th><th>Submitted</th><th>Patient</th><th>Hospital</th><th className="num">Amount</th><th className="num">Hybrid</th><th>Risk</th><th>Suggested decision</th><th className="num">Suggested pay</th></tr></thead>
+              <thead><tr><th>Claim</th><th>Submitted</th><th>Patient</th><th>Hospital</th><th className="num">Amount</th><th className="num">Hybrid</th><th>Risk</th><th>Suggested decision</th><th className="num">Suggested pay</th><th /></tr></thead>
               <tbody>{data.queue.map((q) => (
                 <tr key={q.id} className="clickable" onClick={() => router.push(`/claims/${q.id}`)}>
                   <td className="mono">{q.claim_number}</td><td>{date(q.submitted_at)}</td><td>{q.patient_name}</td><td>{q.hospital_name || "—"}</td>
@@ -51,6 +52,7 @@ function Dashboard() {
                   <td><RiskBadge level={q.risk_level} /></td>
                   <td>{q.advice ? <AdviceBadge decision={q.advice.decision} label={q.advice.label} /> : q.recommendation}</td>
                   <td className="num">{!q.advice ? "—" : q.advice.decision === "investigate" ? "On hold" : inr(q.advice.recommended_amount)}</td>
+                  <td><ClaimAction claim={q} /></td>
                 </tr>))}
               </tbody>
             </table></div>

@@ -19,6 +19,7 @@ class Settings:
     ]
     upload_dir: Path = Path(os.getenv("UPLOAD_DIR", str(BASE_DIR / "uploads")))
     seed_demo: bool = os.getenv("SEED_DEMO", "false").lower() == "true"
+    max_upload_mb: float = float(os.getenv("MAX_UPLOAD_MB", "10"))
 
     # Member 1's cost model (US insurance.csv) and Member 2's fraud model
     # (synthetic claims) were trained on USD-scale numbers; the platform works

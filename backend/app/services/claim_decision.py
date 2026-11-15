@@ -12,6 +12,8 @@ insurers adjudicate claims, using the signals the platform's models already prod
                the "reasonable and customary" price: fair price + 25%
   * the policy — deductible, co-insurance, copay, caps, sum insured, re-applied by
                Member 3's cost calculator to the adjusted bill
+  * authenticity — hospital confirmation and the bill checks (services/verification.py):
+               a failed check -> hold, a warning -> verify
 
 The result is advice; the insurer still makes the decision.
 """
@@ -20,6 +22,7 @@ from typing import Optional
 
 from app.models import Bill, Claim, Policy
 from app.services.ml import registry
+from app.services.verification import CONFIRMED
 
 REASONABLE_MARGIN = 1.25  # pay at most 25% above the predicted fair market price
 
@@ -75,7 +78,19 @@ def recommend(claim: Claim) -> Optional[dict]:
     recommended = round(min(cost.insurance_pays, claim.claim_amount), 2)
     total_deducted = round(sum(d["deducted"] for d in deductions), 2)
 
+    bill_checks = bill.checks or []
+    failed = [c for c in bill_checks if c["status"] == "fail"]
+    warned = [c for c in bill_checks if c["status"] == "warn"]
+    confirmed = bill.verification_status in CONFIRMED
+
     checks = [
+        {"name": "Bill confirmed by hospital", "ok": confirmed,
+         "detail": {"hospital_uploaded": "Submitted by the hospital itself", "confirmed": "Confirmed by the hospital",
+                    "pending": "Awaiting the hospital's confirmation", "disputed": "Disputed by the hospital",
+                    "unverifiable": "Hospital not on HealthBridge"}.get(bill.verification_status or "", "Unknown")},
+        {"name": "Bill authenticity", "ok": bool(bill_checks) and not failed and not warned,
+         "detail": "; ".join(f"{c['name']}: {c['detail']}" for c in failed + warned) if failed or warned
+                   else "All checks passed" if bill_checks else "Not checked (bill analysed before the checks existed)"},
         {"name": "Policy active", "ok": bool(claim.policy and claim.policy.active),
          "detail": claim.policy.policy_number if claim.policy else "No policy"},
         {"name": "Fraud risk", "ok": claim.risk_level == "LOW",
@@ -97,15 +112,21 @@ def recommend(claim: Claim) -> Optional[dict]:
     if claim.risk_level == "HIGH":
         decision = "investigate"
         summary = "The fraud model rates this claim HIGH risk. Hold payment until an investigator reviews it."
+    elif failed or not confirmed:
+        decision = "investigate"
+        reasons = [c["name"].lower() for c in failed] + ([] if confirmed else ["the hospital has not confirmed it"])
+        summary = "The bill may not be genuine (" + "; ".join(reasons) + "). Hold payment until it is checked."
     elif recommended <= 0:
         decision = "reject"
         summary = ("After removing duplicate and overpriced charges, the remaining bill is within the patient's "
                    "deductible or not covered, so insurance owes nothing.")
-    elif claim.risk_level == "MEDIUM" or bill.total_mismatch or review_items:
+    elif claim.risk_level == "MEDIUM" or bill.total_mismatch or review_items or warned:
         decision = "verify"
         reasons = []
         if claim.risk_level == "MEDIUM":
             reasons.append("the fraud risk is MEDIUM")
+        if warned:
+            reasons.append("authenticity warnings (" + ", ".join(c["name"].lower() for c in warned) + ")")
         if bill.total_mismatch:
             reasons.append("the printed total does not match the items")
         if review_items:
@@ -129,5 +150,6 @@ def recommend(claim: Claim) -> Optional[dict]:
         "total_deducted_from_bill": total_deducted,
         "review_items": review_items,
         "checks": checks,
-        "method": "Policy rules + Member 2 fraud risk + Member 3 fair prices and duplicate detection",
+        "method": "Policy rules + Member 2 fraud risk + Member 3 fair prices and duplicate detection "
+                  "+ bill authenticity checks",
     }

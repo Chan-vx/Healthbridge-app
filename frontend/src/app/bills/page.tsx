@@ -3,7 +3,7 @@
 import { useRouter } from "next/navigation";
 import { FormEvent, useState } from "react";
 import AppShell from "@/components/AppShell";
-import { Alert, ClaimStatusBadge, Empty, Loading, PageHead, Panel, PaymentBadge, useApi } from "@/components/ui";
+import { Alert, CheckBadge, ClaimStatusBadge, Empty, Loading, PageHead, Panel, PaymentBadge, useApi, VerificationBadge } from "@/components/ui";
 import { api, BillDetail, BillSummary, Hospital, Person, User } from "@/lib/api";
 import { date, inr } from "@/lib/format";
 
@@ -18,6 +18,8 @@ function NewBill({ user }: { user: User }) {
   const [party, setParty] = useState("");
   const [file, setFile] = useState<File | null>(null);
   const [rows, setRows] = useState([{ description: "", amount: "" }, { description: "", amount: "" }]);
+  const [details, setDetails] = useState({ bill_number: "", admission_date: "", discharge_date: "" });
+  const [recordOnly, setRecordOnly] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -34,13 +36,17 @@ function NewBill({ user }: { user: User }) {
         const items = rows.filter((r) => r.description.trim() && Number(r.amount) > 0)
           .map((r) => ({ description: r.description.trim(), amount: Number(r.amount) }));
         if (!items.length) throw new Error("Add at least one line item with an amount.");
-        bill = await api<BillDetail>("/api/bills/manual", { body: { [partyKey]: party ? Number(party) : null, items } });
+        const filled = Object.fromEntries(Object.entries(details).filter(([, v]) => v.trim()));
+        bill = await api<BillDetail>("/api/bills/manual", {
+          body: { [partyKey]: party ? Number(party) : null, items, ...filled, record_only: isHospital && recordOnly },
+        });
       } else {
         const form = new FormData();
         if (party) form.append(partyKey, party);
         if (mode === "file") {
           if (!file) throw new Error("Choose a bill image or PDF.");
           form.append("file", file);
+          if (isHospital && recordOnly) form.append("record_only", "true");
         }
         bill = await api<BillDetail>(mode === "file" ? "/api/bills/upload" : "/api/bills/sample", { form });
       }
@@ -68,7 +74,7 @@ function NewBill({ user }: { user: User }) {
             </select>
           </label>
         ) : (
-          <label className="field">Hospital (sets the city tier and hospital type used for fair prices)
+          <label className="field">Hospital (sets the fair prices, and is asked to confirm the bill before you can claim it)
             <select id="hospital" value={party} onChange={(e) => setParty(e.target.value)}>
               <option value="">Not listed (tier 2, private)</option>
               {hospitals?.map((h) => <option key={h.id} value={h.id}>{h.name} · {h.city} ({h.city_tier}, {h.hospital_type})</option>)}
@@ -87,6 +93,14 @@ function NewBill({ user }: { user: User }) {
         )}
         {mode === "manual" && (
           <div className="stack" style={{ gap: 8 }}>
+            <div className="form-row">
+              <label className="field">Bill number<input id="m_bill_no" placeholder="e.g. CCH-2026-02500" value={details.bill_number}
+                onChange={(e) => setDetails({ ...details, bill_number: e.target.value })} /></label>
+              <label className="field">Admission date<input id="m_admission" type="date" value={details.admission_date}
+                onChange={(e) => setDetails({ ...details, admission_date: e.target.value })} /></label>
+              <label className="field">Discharge date<input id="m_discharge" type="date" value={details.discharge_date}
+                onChange={(e) => setDetails({ ...details, discharge_date: e.target.value })} /></label>
+            </div>
             {rows.map((r, i) => (
               <div className="form-row" key={i} style={{ gridTemplateColumns: "1fr 140px" }}>
                 <input id={`desc_${i}`} aria-label={`Item ${i + 1} description`} placeholder="e.g. Room Rent (3 days)" value={r.description}
@@ -97,6 +111,12 @@ function NewBill({ user }: { user: User }) {
             ))}
             <div><button type="button" className="btn ghost small" onClick={() => setRows([...rows, { description: "", amount: "" }])}>Add line</button></div>
           </div>
+        )}
+        {isHospital && mode !== "sample" && (
+          <label className="check">
+            <input id="record_only" type="checkbox" checked={recordOnly} onChange={(e) => setRecordOnly(e.target.checked)} />
+            Keep in hospital records only: the patient sees it when they upload a matching copy (or a claim is filed)
+          </label>
         )}
         {error && <Alert>{error}</Alert>}
         <div><button className="btn" disabled={busy}>{busy ? "Analysing…" : "Analyse bill"}</button></div>
@@ -123,7 +143,7 @@ function Bills({ user }: { user: User }) {
                   <tr>
                     <th>Date</th>{user.role !== "patient" && <th>Patient</th>}<th>Hospital</th>
                     <th className="num">Billed</th><th className="num">Insurance</th><th className="num">Patient</th>
-                    <th className="num">Flagged</th><th>Claim</th><th>Payment</th>
+                    <th className="num">Flagged</th><th>Source</th><th>Checks</th><th>Claim</th><th>Payment</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -136,6 +156,8 @@ function Bills({ user }: { user: User }) {
                       <td className="num">{inr(b.insurance_pays)}</td>
                       <td className="num">{inr(b.patient_out_of_pocket)}</td>
                       <td className="num" style={{ color: b.flagged_amount > 0 ? "var(--bad)" : undefined }}>{b.flagged_amount > 0 ? inr(b.flagged_amount) : "—"}</td>
+                      <td><VerificationBadge status={b.verification_status} recordOnly={b.record_only} /></td>
+                      <td><CheckBadge status={b.authenticity} /></td>
                       <td><ClaimStatusBadge status={b.claim_status} /></td>
                       <td><PaymentBadge status={b.payment_status} /></td>
                     </tr>

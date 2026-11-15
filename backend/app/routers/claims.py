@@ -15,6 +15,7 @@ from app.schemas import ClaimDecision, ClaimOut, ClaimRequest
 from app.security import get_current_user, require_roles
 from app.services.claim_decision import recommend
 from app.services.ml import registry
+from app.services.verification import DUPLICATE_CHECKS
 
 router = APIRouter(prefix="/api/claims", tags=["member 2 · claims & fraud"])
 
@@ -26,8 +27,27 @@ def claim_out(c: Claim) -> ClaimOut:
     out.patient_name = c.patient.full_name
     out.hospital_name = c.hospital.name if c.hospital else None
     out.insurer_name = c.insurer.name
+    out.fraud_threshold = registry.fraud.threshold if registry.fraud else None
     out.advice = recommend(c)
     return out
+
+
+NOT_CLAIMABLE = {
+    "pending": "The hospital has not confirmed this bill yet. A claim can be filed once it does.",
+    "disputed": "The hospital disputed this bill, so it cannot be claimed.",
+    "unverifiable": "This bill is from a hospital that is not on HealthBridge, so it cannot be confirmed or claimed.",
+}
+
+
+def _ensure_claimable(bill: Bill):
+    if bill.verification_status == "mismatch":
+        raise HTTPException(422, "This copy differs from the hospital's own record of the bill, so it cannot be "
+                                 "claimed.")
+    if bill.verification_status in NOT_CLAIMABLE:
+        raise HTTPException(422, NOT_CLAIMABLE[bill.verification_status])
+    copy = next((c for c in bill.checks or [] if c["key"] in DUPLICATE_CHECKS and c["status"] == "fail"), None)
+    if copy:
+        raise HTTPException(422, f"This bill repeats an earlier one, so it cannot be claimed: {copy['detail']}")
 
 
 def _scoped(user: User):
@@ -47,10 +67,14 @@ def submit_claim(body: ClaimRequest, user: User = Depends(require_roles("hospita
     if registry.fraud is None:
         raise HTTPException(503, "The fraud model is not loaded. Check /api/health.")
     bill: Bill = _get_bill(db, user, body.bill_id)
+    if bill.verification_status == "matched" and bill.matched_bill_id:
+        bill = _get_bill(db, user, bill.matched_bill_id)  # a matching copy is claimed through the hospital's record
     if bill.policy_id is None:
         raise HTTPException(422, "This patient had no active insurance policy when the bill was analysed.")
     if bill.insurance_pays <= 0:
         raise HTTPException(422, "Insurance covers nothing on this bill, so there is nothing to claim.")
+    _ensure_claimable(bill)
+    bill.record_only = None  # once claimed, the patient and insurer see the bill
     existing = db.scalar(select(Claim).where(Claim.bill_id == bill.id, Claim.status != "rejected"))
     if existing:
         raise HTTPException(409, f"Claim {existing.claim_number} already exists for this bill.")
@@ -88,8 +112,8 @@ def submit_claim(body: ClaimRequest, user: User = Depends(require_roles("hospita
 def list_claims(status: Optional[str] = None, risk: Optional[str] = None,
                 user: User = Depends(get_current_user), db: Session = Depends(get_db)):
     query = _scoped(user)
-    if status:
-        query = query.where(Claim.status == status)
+    if status:  # one status or several, comma-separated: ?status=approved,settled,rejected
+        query = query.where(Claim.status.in_([s.strip() for s in status.split(",") if s.strip()]))
     if risk:
         query = query.where(Claim.risk_level == risk.upper())
     claims = db.scalars(query.order_by(Claim.submitted_at.desc())).all()

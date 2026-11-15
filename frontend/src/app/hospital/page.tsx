@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import AppShell from "@/components/AppShell";
 import { MonthlyShareChart } from "@/components/charts";
-import { ClaimStatusBadge, Empty, Kpi, Loading, PageHead, Panel, RiskBadge, useApi } from "@/components/ui";
+import { CheckBadge, ClaimStatusBadge, Empty, Kpi, Loading, PageHead, Panel, RiskBadge, useApi } from "@/components/ui";
 import { BillSummary, Claim } from "@/lib/api";
 import { date, inr } from "@/lib/format";
 
@@ -14,6 +14,8 @@ interface HospitalDash {
   claims: { count: number; by_status: Record<string, number>; by_risk: Record<string, number>; approval_rate: number | null };
   revenue: { billed: number; insurance_receivable: number; insurance_settled: number; insurance_pending: number; patient_collected: number; patient_outstanding: number };
   monthly: { month: string; insurance: number; patient: number; billed: number }[];
+  awaiting_confirmation: BillSummary[];
+  mismatched_copies: BillSummary[];
   unclaimed_bills: BillSummary[];
   recent_claims: Claim[];
 }
@@ -35,6 +37,39 @@ function Dashboard() {
         <Kpi label="Claims pending review" value={inr(r.insurance_pending)} sub={`${data.claims.by_status.submitted} claims`} />
         <Kpi label="Patient dues outstanding" value={inr(r.patient_outstanding)} tone={r.patient_outstanding > 0 ? "warn" : undefined} sub={`${inr(r.patient_collected)} collected or on EMI`} />
       </div>
+      {data.awaiting_confirmation.length > 0 && (
+        <div style={{ marginBottom: 16 }}>
+          <Panel title="Bills patients uploaded: awaiting your confirmation" flush
+            hint="Patients cannot claim these until you confirm they are your bills. Open one to confirm or dispute it.">
+            <div className="table-wrap"><table>
+              <thead><tr><th>Uploaded</th><th>Patient</th><th>Bill no.</th><th className="num">Billed</th><th>Checks</th><th /></tr></thead>
+              <tbody>{data.awaiting_confirmation.map((b) => (
+                <tr key={b.id} className="clickable" onClick={() => router.push(`/bills/${b.id}`)}>
+                  <td>{date(b.created_at)}</td><td>{b.patient_name}</td><td className="mono">{b.bill_number || "—"}</td>
+                  <td className="num">{inr(b.total_billed)}</td><td><CheckBadge status={b.authenticity} /></td>
+                  <td><span className="btn ghost small">Review</span></td>
+                </tr>))}
+              </tbody>
+            </table></div>
+          </Panel>
+        </div>
+      )}
+      {data.mismatched_copies.length > 0 && (
+        <div style={{ marginBottom: 16 }}>
+          <Panel title="Patient copies that differ from your bills" flush
+            hint="A patient uploaded a bill with one of your bill numbers, but the dates, lines or amounts are not what you billed.">
+            <div className="table-wrap"><table>
+              <thead><tr><th>Uploaded</th><th>Patient</th><th>Bill no.</th><th className="num">Amount on copy</th><th /></tr></thead>
+              <tbody>{data.mismatched_copies.map((b) => (
+                <tr key={b.id} className="clickable" onClick={() => router.push(`/bills/${b.id}`)}>
+                  <td>{date(b.created_at)}</td><td>{b.patient_name}</td><td className="mono">{b.bill_number || "—"}</td>
+                  <td className="num">{inr(b.total_billed)}</td><td><span className="btn ghost small">Compare</span></td>
+                </tr>))}
+              </tbody>
+            </table></div>
+          </Panel>
+        </div>
+      )}
       <div className="cols-3" style={{ marginBottom: 16 }}>
         <Panel title="Monthly billing" hint="Split between insurers and patients">
           {data.monthly.length ? <MonthlyShareChart rows={data.monthly} /> : <Empty>No bills yet.</Empty>}
@@ -51,7 +86,7 @@ function Dashboard() {
         </Panel>
       </div>
       <div className="cols-2">
-        <Panel title="Bills ready to claim" flush hint="Insured bills without a claim">
+        <Panel title="Bills ready to claim" flush hint="Insured, confirmed bills without a claim">
           {data.unclaimed_bills.length ? (
             <div className="table-wrap"><table>
               <thead><tr><th>Date</th><th>Patient</th><th className="num">Insurance share</th><th /></tr></thead>

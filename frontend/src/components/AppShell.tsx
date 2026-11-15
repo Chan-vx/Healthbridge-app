@@ -20,6 +20,7 @@ const NAV: Record<Role, { href: string; label: string }[]> = {
   insurer: [
     { href: "/insurance", label: "Overview" },
     { href: "/claims", label: "Claims queue" },
+    { href: "/insurance/history", label: "Claims history" },
     { href: "/insurance/policies", label: "Policies" },
   ],
   finance: [

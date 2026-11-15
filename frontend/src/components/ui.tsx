@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
 import { api, Claim } from "@/lib/api";
 import { titleCase } from "@/lib/format";
@@ -98,6 +99,41 @@ export function SeverityBadge({ severity }: { severity: string }) {
   if (severity === "high_risk") return <span className="badge b-bad">Overcharge</span>;
   if (severity === "review") return <span className="badge b-warn">Review</span>;
   return <span className="badge b-good">Fair</span>;
+}
+
+const VERIFICATION: Record<string, [string, string]> = {
+  hospital_uploaded: ["b-good", "From hospital"],
+  confirmed: ["b-good", "Hospital confirmed"],
+  pending: ["b-warn", "Awaiting hospital"],
+  disputed: ["b-bad", "Disputed by hospital"],
+  unverifiable: ["b-muted", "Hospital not on platform"],
+  matched: ["b-good", "Matches hospital record"],
+  mismatch: ["b-bad", "Differs from hospital record"],
+};
+
+/** Who vouches for the bill: the hospital submitted it, confirmed it, disputed it, or has not answered yet. */
+export function VerificationBadge({ status, recordOnly }: { status: string | null | undefined; recordOnly?: boolean | null }) {
+  if (recordOnly) return <span className="badge b-info">Hospital record only</span>;
+  if (!status) return null;
+  const [cls, label] = VERIFICATION[status] || ["b-muted", titleCase(status)];
+  return <span className={`badge ${cls}`}>{label}</span>;
+}
+
+/** Result of one authenticity check, or the overall result of all of them. */
+export function CheckBadge({ status }: { status: string | null | undefined }) {
+  if (status === "pass") return <span className="badge b-good">Pass</span>;
+  if (status === "warn") return <span className="badge b-warn">Warning</span>;
+  if (status === "fail") return <span className="badge b-bad">Fail</span>;
+  if (status === "skip") return <span className="badge b-muted">Not applicable</span>;
+  if (status === "waiting") return <span className="badge b-info">Waiting</span>;
+  return <span className="badge b-muted">Not checked</span>;
+}
+
+/** The insurer's next step on a claim, as a link to the claim page where it is done. */
+export function ClaimAction({ claim }: { claim: Claim }) {
+  if (claim.status === "submitted") return <Link className="btn small" href={`/claims/${claim.id}`} onClick={(e) => e.stopPropagation()}>Decide</Link>;
+  if (claim.status === "approved") return <Link className="btn ghost small" href={`/claims/${claim.id}`} onClick={(e) => e.stopPropagation()}>Settle</Link>;
+  return <span className="muted small">Done</span>;
 }
 
 export function AdviceBadge({ decision, label }: { decision: string; label: string }) {

@@ -7,6 +7,7 @@ from sqlalchemy import text
 
 from app.config import settings
 from app.database import Base, SessionLocal, engine
+from app.migrate import add_missing_columns
 from app.routers import auth, bills, claims, dashboard, patients, policies
 from app.services.ml import FraudModel, registry
 
@@ -16,6 +17,7 @@ log = logging.getLogger("healthbridge")
 @asynccontextmanager
 async def lifespan(_: FastAPI):
     Base.metadata.create_all(engine)
+    add_missing_columns(engine)
     registry.load()  # every model is loaded once here, not per request
     for name, error in registry.errors.items():
         log.error("Model %s failed to load: %s", name, error)

@@ -163,12 +163,15 @@ class ManualBillRequest(BaseModel):
     admission_date: Optional[str] = None
     discharge_date: Optional[str] = None
     items: list[ManualItem] = Field(min_length=1)
+    record_only: bool = Field(default=False, description="Hospital only: keep it in the hospital's records, hidden "
+                                                          "from the patient until they upload a matching copy")
 
 
 class TextBillRequest(BaseModel):
     patient_id: Optional[int] = None
     hospital_id: Optional[int] = None
     raw_text: str = Field(min_length=10)
+    record_only: bool = False
 
 
 class BillItemOut(ORMModel):
@@ -202,6 +205,10 @@ class BillSummaryOut(ORMModel):
     total_mismatch: bool
     payment_status: str
     created_at: datetime
+    verification_status: Optional[str] = None
+    record_only: Optional[bool] = None
+    authenticity: Optional[str] = None
+    registered_hospital: Optional[str] = None  # the HealthBridge hospital account, not the printed name
     patient_name: Optional[str] = None
     claim_status: Optional[str] = None
 
@@ -218,8 +225,20 @@ class BillDetailOut(BillSummaryOut):
     recommendations: list
     items: list[BillItemOut]
     policy_id: Optional[int]
+    printed_patient_name: Optional[str] = None
+    checks: Optional[list] = None
+    verification_note: Optional[str] = None
+    verified_at: Optional[datetime] = None
+    matched_bill_id: Optional[int] = None
+    match_result: Optional[dict] = None
+    error_level_available: bool = False
     claim_id: Optional[int] = None
     payment: Optional[dict] = None
+
+
+class BillVerificationRequest(BaseModel):
+    action: Literal["confirm", "dispute"]
+    note: Optional[str] = Field(default=None, max_length=1000)
 
 
 class EMIRequest(BaseModel):
@@ -278,4 +297,5 @@ class ClaimOut(ORMModel):
     patient_name: Optional[str] = None
     hospital_name: Optional[str] = None
     insurer_name: Optional[str] = None
+    fraud_threshold: Optional[float] = None
     advice: Optional[dict] = None  # Claim Decision Engine recommendation

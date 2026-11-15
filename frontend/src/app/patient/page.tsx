@@ -6,7 +6,7 @@ import AppShell from "@/components/AppShell";
 import { ShapBars } from "@/components/charts";
 import { ClaimStatusBadge, Empty, Kpi, Loading, PageHead, Panel, PaymentBadge, useApi } from "@/components/ui";
 import { BillSummary, Claim, Policy, ShapItem } from "@/lib/api";
-import { date, FEATURE_LABELS, inr, usd } from "@/lib/format";
+import { date, FEATURE_LABELS, inr } from "@/lib/format";
 
 interface PatientDash {
   bills: { count: number; total_billed: number; insurance_share: number; patient_share: number; flagged_amount: number; unpaid_patient_dues: number };
@@ -30,7 +30,7 @@ function Dashboard() {
         <Link className="btn" href="/bills">Upload a bill</Link>
       </PageHead>
       <div className="kpis">
-        <Kpi label="Predicted yearly cost" value={est ? usd(est.predicted_usd) : "—"} sub={est ? `≈ ${inr(est.predicted_inr)}` : "Run an estimate"} />
+        <Kpi label="Predicted yearly cost" value={est ? inr(est.predicted_inr) : "—"} sub={est ? "Expected medical expenses per year" : "Run an estimate"} />
         <Kpi label="Total billed" value={inr(data.bills.total_billed)} sub={`${data.bills.count} bills`} />
         <Kpi label="Insurance covered" value={inr(data.bills.insurance_share)} tone="good" />
         <Kpi label="Unpaid dues" value={inr(data.bills.unpaid_patient_dues)} tone={data.bills.unpaid_patient_dues > 0 ? "warn" : undefined}
@@ -43,8 +43,8 @@ function Dashboard() {
           actions={<Link className="btn ghost small" href="/patient/estimate">Update estimate</Link>}>
           {est ? (
             <ShapBars
-              items={est.shap.map((s) => ({ label: FEATURE_LABELS[s.feature] || s.feature, detail: String(s.value ?? ""), value: s.shap_usd }))}
-              format={(n) => usd(n)} upLabel="Raises the estimate" downLabel="Lowers the estimate" />
+              items={est.shap.map((s) => ({ label: FEATURE_LABELS[s.feature] || s.feature, detail: String(s.value ?? ""), value: s.shap_inr }))}
+              format={(n) => inr(n)} upLabel="Raises the estimate" downLabel="Lowers the estimate" />
           ) : (
             <Empty>No estimate yet. <Link href="/patient/estimate">Fill in your profile</Link> to get one.</Empty>
           )}

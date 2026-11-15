@@ -46,6 +46,20 @@ NON_COVERED_KEYWORDS = [r"cosmetic", r"non-?medical", r"non-?empanelled"]
 LINE_ITEM_PATTERN = re.compile(r"^(.+?)\s{2,}(?:Rs\.?\s*)?([\d,]+\.\d{2})\s*$")
 LINE_ITEM_FALLBACK = re.compile(r"^(.+?)\s+([\d,]+\.\d{2})\s*$")
 
+# Integration addition: the standard hospital bill table "S.No | Particulars | Qty | Rate | Amount".
+# A row reads "3 Surgery - Hernia Repair 1 61,000.00 61,000.00": drop the serial number in
+# front and the quantity and rate before the amount, keeping only the description.
+SERIAL_PREFIX = re.compile(r"^\d{1,3}[.)]?\s+(?=\D)")
+QTY_RATE_SUFFIX = re.compile(r"\s+(?:\d+(?:\.\d+)?|[|Il])\s+[\d,]+\.\d{2}$")  # OCR may read a qty of 1 as | or l
+# a date after the label, skipping whatever OCR made of the colon ("Discharge Date 1 18-Oct-2026")
+_DATE = r"[\s:;|.1-]{0,5}?\b(\d{1,2}[-/ ](?:[A-Za-z]{3,9}|\d{1,2})[-/ ]\d{2,4})"
+ADMISSION_DATE = r"Admission\s*Date" + _DATE
+DISCHARGE_DATE = r"Discharge\s*Date" + _DATE
+VISIT_DATE = r"Visit\s*Date" + _DATE
+PATIENT_LABELLED = re.compile(
+    r"Patient(?:'s)?\s*Name\s*[:\-]?\s*([A-Za-z .]+?)(?=\s{2,}|\s+(?:Bill|Age|UHID|IP|OP|Sex|Mobile|Contact)\b|\s*$)",
+    re.IGNORECASE | re.MULTILINE)
+
 
 def categorize(description: str) -> str:
     desc_lower = description.lower()
@@ -65,10 +79,16 @@ class BillParser:
         lines = [l.strip() for l in raw_text.split("\n") if l.strip()]
 
         hospital_name = self._extract_hospital_name(lines)
-        patient_name = self._extract_field(raw_text, r"Patient\s*[:\-]?\s*([A-Za-z .]+?)(?:\s{2,}|Bill|$)")
+        labelled = PATIENT_LABELLED.search(raw_text)
+        patient_name = labelled.group(1).strip() if labelled else \
+            self._extract_field(raw_text, r"Patient\s*[:\-]?\s*([A-Za-z .]+?)(?:\s{2,}|Bill|$)")
         bill_number = self._extract_field(raw_text, r"Bill\s*No\.?\s*[:\-]?\s*([A-Za-z0-9\-\/]+)")
-        admission_date = self._extract_field(raw_text, r"Admission\s*Date\s*[:\-]?\s*([\d\-A-Za-z]+)")
-        discharge_date = self._extract_field(raw_text, r"Discharge\s*Date\s*[:\-]?\s*([\d\-A-Za-z]+)")
+        admission_date = self._extract_field(raw_text, ADMISSION_DATE) or \
+            self._extract_field(raw_text, r"Admission\s*Date\s*[:\-]?\s*([\d\-A-Za-z]+)")
+        discharge_date = self._extract_field(raw_text, DISCHARGE_DATE) or \
+            self._extract_field(raw_text, r"Discharge\s*Date\s*[:\-]?\s*([\d\-A-Za-z]+)")
+        if not admission_date and not discharge_date:  # out-patient bill: one visit, same day
+            admission_date = discharge_date = self._extract_field(raw_text, VISIT_DATE)
 
         line_items = self._extract_line_items(lines)
         stated_total = self._extract_stated_total(raw_text)
@@ -92,6 +112,8 @@ class BillParser:
     @staticmethod
     def _extract_hospital_name(lines: List[str]) -> Optional[str]:
         for line in lines[:5]:
+            if re.search(r"www\.|@", line):  # a web or email address, not the name
+                continue
             if re.search(r"hospital|clinic|medical\s*cent(er|re)|nursing\s*home", line, re.IGNORECASE):
                 return line.strip()
         return lines[0] if lines else None
@@ -107,7 +129,7 @@ class BillParser:
             if "itemized" in lower and "charges" in lower:
                 in_items_section = True
                 continue
-            if "description" in lower and "amount" in lower:
+            if ("description" in lower or "particulars" in lower) and "amount" in lower:
                 in_items_section = True
                 continue
             if "total" in lower:
@@ -119,7 +141,7 @@ class BillParser:
 
             match = LINE_ITEM_PATTERN.match(line) or LINE_ITEM_FALLBACK.match(line)
             if match:
-                desc = match.group(1).strip().rstrip(".")
+                desc = QTY_RATE_SUFFIX.sub("", SERIAL_PREFIX.sub("", match.group(1).strip())).strip().rstrip(".")
                 amt_str = match.group(2).replace(",", "")
                 try:
                     amount = float(amt_str)

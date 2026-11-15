@@ -84,9 +84,52 @@ Next.js (5 role workspaces) ──JWT──▶ FastAPI ──▶ PostgreSQL (10 
                                        └─▶ Member 3 bill analyzer (OCR → parse → detect → cost → EMI → advice)
 ```
 
-Workflow: hospital or patient uploads a bill → Member 3 checks every line and splits
-insurance vs patient → the insurance share becomes a claim → Member 2 scores it →
-insurer approves/rejects/settles → patient pays the balance in full or on EMI.
+Workflow: hospital or patient uploads a bill → authenticity checks → Member 3 checks every
+line and splits insurance vs patient → (a patient's bill is confirmed by the hospital) → the
+insurance share becomes a claim → Member 2 scores it → insurer approves/rejects/settles →
+patient pays the balance in full or on EMI.
+
+## Bill authenticity (is the bill genuine?)
+
+The models judge **prices** (Member 3) and **claim risk** (Member 2). A fake bill with fair
+prices passes both, so `backend/app/services/verification.py` also checks every bill:
+
+| Check | Result |
+|---|---|
+| Printed hospital name matches the hospital it is filed under | fail if it does not (fuzzy match, tolerant of case and initials) |
+| Printed patient name matches the patient account | fail if it does not |
+| Same file uploaded before (SHA-256) | fail |
+| Bill number already used at this hospital | fail |
+| Same hospital, dates, lines and amounts as an earlier bill | fail (warning without dates) |
+| Discharge before admission, or a future date | fail |
+| Treatment before the policy started, or over a year old | warning |
+| Editing software in the file's metadata; PDF modified or re-saved after creation | warning |
+
+**Compared with the hospital's record:** when a **patient** uploads a bill, OCR reads its bill
+number and the app looks up the bill the **hospital itself** submitted under that number
+(tolerating OCR look-alikes such as O/0). The two are compared date by date and line by line:
+identical → *matches hospital record* (genuine; the claim is filed on the hospital's record, so
+nothing is claimed or counted twice); any difference → *differs from hospital record*, listing
+each one ("₹86,000 on this copy vs ₹36,000 in the hospital's record"), and it cannot be claimed.
+A number that belongs to another patient's bill fails without revealing that bill. If the
+hospital submits the bill later, waiting copies are compared automatically.
+
+**Hospital confirmation:** a bill the hospital uploads is vouched for by the hospital. A bill a
+**patient** uploads with no hospital record stays *awaiting confirmation* until that hospital
+confirms or disputes it (`POST /api/bills/{id}/verification`); it cannot be claimed before. A repeated bill can never be
+claimed. In the Claim Decision Engine a failed check means "hold for investigation" and a warning
+means "approve after verification".
+
+**Error level analysis** of JPEG photos is shown to hospital, insurer and finance users as a
+picture (`GET /api/bills/{id}/error-level`), not scored: on our test bills a pasted amount was
+visible, but genuine photos saved at other JPEG qualities reached similar values, so an
+automatic threshold would not be reliable.
+
+Limits: metadata can be stripped, so "no signs of editing" does not prove a file is genuine;
+hospital confirmation is the decisive control. Fake test bills: `test_samples/fake_bills/`.
+
+Existing databases are upgraded on start (`backend/app/migrate.py` adds the new columns). For
+the demo data with the new examples, reset with `docker compose down -v`.
 
 ## Integration notes (what had to change)
 
@@ -102,6 +145,11 @@ insurer approves/rejects/settles → patient pays the balance in full or on EMI.
   subtracted from what insurance pays, so insurance + patient = bill.
 - **Length of stay** for room rent / nursing is read from the line text or the admission
   and discharge dates instead of a fixed 5 days.
+- **Standard bill layout** in `bill_app/parsing/bill_parser.py`: the parser also reads the table
+  most hospitals print ("S.No | Particulars | Qty | Rate | Amount", grouped by department), a
+  labelled "Patient Name :" field, and dates where OCR misreads the colon. Bills in the original
+  layout parse exactly as before. The test bills in `test_samples/` use this layout
+  (`test_samples/bill_template.py`).
 - The Member 3 package was renamed from `app` to `bill_app` to avoid clashing with the
   backend's own `app` package (its files import each other by path, so nothing else changed).
 

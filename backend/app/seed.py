@@ -13,10 +13,16 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from app.models import Bill, Claim, CostEstimate, Hospital, Insurer, PatientProfile, Payment, Policy, User
-from app.routers.bills import manual_bill, sample_bill
+from app.routers.bills import manual_bill, pay_bill, sample_bill, verify_bill
 from app.routers.claims import decide_claim, submit_claim
-from app.routers.bills import pay_bill
-from app.schemas import ClaimDecision, ClaimRequest, ManualBillRequest, ManualItem, PaymentRequest
+from app.schemas import (
+    BillVerificationRequest,
+    ClaimDecision,
+    ClaimRequest,
+    ManualBillRequest,
+    ManualItem,
+    PaymentRequest,
+)
 from app.security import hash_password
 from app.services.ml import registry
 
@@ -87,12 +93,14 @@ def seed(db: Session) -> bool:
         "arjun@patient.in": dict(deductible=0, co_insurance_pct=10, copay_flat=1000, room_rent_cap=15000,
                                  sum_insured=1000000),
     }
-    for n, (email, terms) in enumerate(policy_terms.items(), start=1):
-        db.add(Policy(policy_number=f"POL-DEMO{n:02d}", patient_id=pu[email].id, insurer_id=ins.id, **terms))
-    db.commit()
-
     now = datetime.now(timezone.utc)
     ago = lambda days: now - timedelta(days=days)  # noqa: E731
+
+    # issued well before any demo or test bill, so treatment dates fall inside the policy period
+    for n, (email, terms) in enumerate(policy_terms.items(), start=1):
+        db.add(Policy(policy_number=f"POL-DEMO{n:02d}", patient_id=pu[email].id, insurer_id=ins.id,
+                      created_at=ago(400), **terms))
+    db.commit()
 
     for email in ("ramesh@patient.in", "priya@patient.in", "arjun@patient.in"):
         p = db.scalar(select(PatientProfile).where(PatientProfile.user_id == pu[email].id))
@@ -172,13 +180,73 @@ def seed(db: Session) -> bool:
             for pay in db.scalars(select(Payment).where(Payment.bill_id == bill.id)):
                 pay.created_at = ago(max(days - 2, 1))
         db.commit()
+
+    # The hospitals' own records of bills in test_samples/, kept in the hospital's records only: the
+    # patient does not see them until they upload their copy, which is then compared line by line.
+    # Priya's genuine copy (patient_copies/copy_01) and Ramesh's bills (ramesh_bills/) match; the
+    # photo with a pasted surgery amount (fake_bills/fake_06: ₹86,000) differs from Sunrise's ₹36,000.
+    for hosp_user, email, number, admitted, discharged, rows, days in (
+        (h1u, "priya@patient.in", "CCH-2026-02350", "06-Nov-2026", "08-Nov-2026",
+         (("Room Rent (2 days)", 10250), ("Consultation - Physician", 1000), ("Blood Test - Vitamin D", 3300),
+          ("Medicines - Vitamin D3 capsules", 270)), 6),
+        (h2u, "arjun@patient.in", "SGH-2026-02291", "04-Nov-2026", "07-Nov-2026",
+         (("Room Rent (3 days)", 9300), ("Surgery - Hernia Repair", 36000), ("Consultation - Surgeon", 600),
+          ("Nursing Charges (3 days)", 3600), ("Tablet Paracetamol 500mg", 150)), 7),
+        (h1u, "ramesh@patient.in", "CCH-2026-02466", "20-Oct-2026", "23-Oct-2026",
+         (("Room Rent (3 days)", 15150), ("Nursing Charges (3 days)", 6060),
+          ("Procedure - Ureteroscopy Stone Removal", 58000), ("Anaesthetist Fee", 11000), ("CT Scan KUB", 3350),
+          ("Consultation - Urologist", 1000), ("Medicines - Tamsulosin capsules", 260)), 22),
+        (h2u, "ramesh@patient.in", "SGH-2026-02472", "26-Oct-2026", "30-Oct-2026",
+         (("Room Rent (4 days)", 12000), ("Nursing Charges (4 days)", 4800), ("Consultation - Physician", 600),
+          ("Blood Test - Widal", 2000), ("Blood Culture Test", 2100), ("Injection Ceftriaxone 1g", 160),
+          ("Tablet Azithromycin 500mg", 150)), 15),
+        (h1u, "ramesh@patient.in", "CCH-2026-02489", "14-Sep-2026", "17-Sep-2026",
+         (("Room Rent (3 days)", 15300), ("Nursing Charges (3 days)", 6000), ("Consultation - Pulmonologist", 1000),
+          ("X-Ray Chest", 3300), ("Blood Test - CBC", 3250), ("Injection Piperacillin 4.5g", 270),
+          ("Nebuliser medicine - Budesonide", 250)), 58),
+        (h2u, "ramesh@patient.in", "SGH-2026-02495", "22-Sep-2026", "22-Sep-2026",
+         (("Procedure - Cataract Surgery (Phaco with IOL)", 34500), ("Consultation - Ophthalmologist", 600),
+          ("Diagnostic - Biometry Scan", 2000), ("Medicines - Eye drops", 150)), 54),
+        (h1u, "ramesh@patient.in", "CCH-2026-02411", "02-Nov-2026", "04-Nov-2026",
+         (("Room Rent (2 days)", 10100), ("Nursing Charges (2 days)", 4050), ("Consultation - Gastroenterologist", 1000),
+          ("Blood Test - Serum Electrolytes", 3300), ("Ultrasound Abdomen Scan", 3400),
+          ("Injection Ondansetron 4mg", 250), ("Medicines - ORS and Probiotic", 240)), 11),
+        (h2u, "ramesh@patient.in", "SGH-2026-02438", "08-Nov-2026", "11-Nov-2026",
+         (("Room Rent (3 days)", 9000), ("Nursing Charges (3 days)", 3600), ("Surgery - Wrist Fracture Fixation", 34000),
+          ("Anaesthetist Fee", 9000), ("X-Ray Wrist", 2000), ("Consultation - Orthopaedic", 600),
+          ("Tablet Aceclofenac 100mg", 150)), 4),
+    ):
+        record = manual_bill(ManualBillRequest(patient_id=pu[email].id, bill_number=number, admission_date=admitted,
+                                               discharge_date=discharged, items=_items(*rows), record_only=True),
+                             user=hosp_user, db=db)
+        db.get(Bill, record.id).created_at = ago(days)
+
+    # Bills patients uploaded themselves: one waiting for Sunrise to confirm it, one City Care disputed
+    day = lambda days: f"{ago(days):%d-%b-%Y}"  # noqa: E731
+    waiting = manual_bill(ManualBillRequest(
+        hospital_id=h2.id, admission_date=day(5), discharge_date=day(3),
+        items=_items(("Room Rent (2 days)", 6100), ("Consultation - Physician", 620),
+                     ("Blood Test - Dengue NS1", 1900), ("Tablet Paracetamol 500mg", 150))),
+        user=pu["arjun@patient.in"], db=db)
+    db.get(Bill, waiting.id).created_at = ago(2)
+    disputed = manual_bill(ManualBillRequest(
+        hospital_id=h1.id, admission_date=day(10), discharge_date=day(8),
+        items=_items(("Room Rent (2 days)", 10400), ("Consultation - Specialist", 1000), ("MRI Scan Brain", 3600))),
+        user=pu["priya@patient.in"], db=db)
+    db.get(Bill, disputed.id).created_at = ago(7)
+    verify_bill(disputed.id, BillVerificationRequest(
+        action="dispute", note="No admission for this patient on these dates in our records."), user=h1u, db=db)
+    db.commit()
     return True
 
 
 if __name__ == "__main__":
     from app.database import Base, SessionLocal, engine
 
+    from app.migrate import add_missing_columns
+
     Base.metadata.create_all(engine)
+    add_missing_columns(engine)
     registry.load()
     with SessionLocal() as session:
         print("Seeded demo data." if seed(session) else "Database already has users; seed skipped.")

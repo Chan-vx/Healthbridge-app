@@ -1,10 +1,8 @@
 const inrFmt = new Intl.NumberFormat("en-IN", { style: "currency", currency: "INR", maximumFractionDigits: 0 });
 const inrExact = new Intl.NumberFormat("en-IN", { style: "currency", currency: "INR", minimumFractionDigits: 2 });
-const usdFmt = new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 0 });
 
 export const inr = (n: number | null | undefined) => (n == null ? "—" : inrFmt.format(n));
 export const inrPaise = (n: number | null | undefined) => (n == null ? "—" : inrExact.format(n));
-export const usd = (n: number | null | undefined) => (n == null ? "—" : usdFmt.format(n));
 
 /** Compact rupees for chart axes: ₹1.2L, ₹3.4Cr */
 export function inrShort(n: number): string {

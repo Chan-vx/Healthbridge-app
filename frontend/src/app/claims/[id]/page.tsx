@@ -7,7 +7,15 @@ import AppShell from "@/components/AppShell";
 import { ShapBars } from "@/components/charts";
 import { AdviceBadge, Alert, ClaimStatusBadge, Kpi, Loading, PageHead, Panel, RiskBadge, useApi } from "@/components/ui";
 import { Advice, api, Claim, User } from "@/lib/api";
-import { date, inr, titleCase } from "@/lib/format";
+import { date, inr, pct, titleCase } from "@/lib/format";
+
+const MODEL_INPUT_LABELS: Record<string, string> = {
+  ClaimAmount: "Claim amount", PatientAge: "Patient age", PatientGender: "Patient gender",
+  ProviderSpecialty: "Provider specialty", PatientIncome: "Patient income", PatientMaritalStatus: "Marital status",
+  PatientEmploymentStatus: "Employment", ProviderLocation: "Provider location", ClaimType: "Claim type",
+  ClaimSubmissionMethod: "Submitted by", ClaimYear: "Claim year", ClaimMonth: "Claim month", ClaimDayOfWeek: "Claim day",
+};
+const WEEKDAYS = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
 
 function Decision({ claim, onDone }: { claim: Claim; onDone: (c: Claim) => void }) {
   const [amount, setAmount] = useState(String(claim.advice?.recommended_amount ?? claim.claim_amount));
@@ -30,9 +38,16 @@ function Decision({ claim, onDone }: { claim: Claim; onDone: (c: Claim) => void 
     }
   }
 
-  if (claim.status === "rejected" || claim.status === "settled") return null;
+  if (claim.status === "rejected" || claim.status === "settled") {
+    return (
+      <Alert kind={claim.status === "settled" ? "ok" : "info"}>
+        {claim.status === "settled" ? `Settled: ${inr(claim.approved_amount)} paid to the hospital` : "Rejected"}
+        {claim.decided_at ? ` on ${date(claim.decided_at)}.` : "."} No further action is needed.
+      </Alert>
+    );
+  }
   return (
-    <Panel title="Decision" hint={claim.status === "submitted" ? (claim.advice ? `Recommended: ${claim.advice.label} (${inr(claim.advice.recommended_amount)})` : `Model recommendation: ${claim.recommendation}`) : "Approved and awaiting payment to the hospital."}>
+    <Panel title={claim.status === "submitted" ? "Your decision: approve or reject" : "Next step: settle the claim"} hint={claim.status === "submitted" ? (claim.advice ? `Recommended: ${claim.advice.label} (${inr(claim.advice.recommended_amount)})` : `Model recommendation: ${claim.recommendation}`) : "Approved and awaiting payment to the hospital."}>
       <div className="form">
         {claim.status === "submitted" && (
           <>
@@ -115,6 +130,13 @@ function ClaimView({ user }: { user: User }) {
 
   const tone = claim.risk_level === "HIGH" ? "bad" : claim.risk_level === "MEDIUM" ? "warn" : "good";
   const inputs = claim.model_inputs;
+  // the fraud model works on the dollar scale it was trained on; show its money inputs in rupees
+  const toRupees = claim.claim_amount / Number(inputs.ClaimAmount || 1);
+  const showInput = (k: string, v: string | number) =>
+    k === "ClaimAmount" ? inr(claim.claim_amount)
+      : k === "PatientIncome" ? `${inr(Number(v) * toRupees)} a year`
+        : k === "ClaimDayOfWeek" ? WEEKDAYS[Number(v)] ?? v
+          : typeof v === "number" ? v.toLocaleString("en-IN") : v;
 
   return (
     <>
@@ -128,9 +150,11 @@ function ClaimView({ user }: { user: User }) {
       <div className="kpis">
         <Kpi label="Claimed" value={inr(claim.claim_amount)} sub={claim.approved_amount != null ? `Approved ${inr(claim.approved_amount)}` : undefined} />
         <Kpi label="Hybrid risk score" value={claim.hybrid_risk_score.toFixed(3)} tone={tone} sub={`${claim.risk_level} · ${claim.recommendation}`} />
-        <Kpi label="XGBoost fraud probability" value={`${(claim.fraud_probability * 100).toFixed(2)}%`} sub={`Flag ${claim.fraud_prediction ? "raised" : "not raised"} at 5% threshold`} />
+        <Kpi label="XGBoost fraud probability" value={`${(claim.fraud_probability * 100).toFixed(2)}%`} sub={`Flag ${claim.fraud_prediction ? "raised" : "not raised"} at ${pct(claim.fraud_threshold, 1)} threshold`} />
         <Kpi label="Isolation Forest anomaly" value={claim.anomaly_score.toFixed(3)} sub="0 = typical, 1 = most unusual" />
       </div>
+
+      {user.role === "insurer" && <div style={{ marginBottom: 16 }}><Decision claim={claim} onDone={setData} /></div>}
 
       {claim.advice && <div style={{ marginBottom: 16 }}><AdvicePanel advice={claim.advice} /></div>}
 
@@ -142,12 +166,11 @@ function ClaimView({ user }: { user: User }) {
           <p className="note-line">Hybrid = 0.80 × {claim.fraud_probability.toFixed(4)} + 0.20 × {claim.anomaly_score.toFixed(4)} = {claim.hybrid_risk_score.toFixed(4)}. HIGH ≥ 0.70, MEDIUM ≥ 0.40.</p>
         </Panel>
         <div className="stack">
-          {user.role === "insurer" && <Decision claim={claim} onDone={setData} />}
           {claim.decision_note && <Panel title="Decision note"><p style={{ margin: 0 }}>{claim.decision_note}</p><p className="note-line">{date(claim.decided_at)}</p></Panel>}
-          <Panel title="What the fraud model saw" hint="Platform amounts are converted to the model's USD scale.">
+          <Panel title="What the fraud model saw" hint="The claim details the fraud model scored. Amounts in rupees.">
             <dl className="kv">
               {Object.entries(inputs).map(([k, v]) => (
-                <Fragment key={k}><dt>{k}</dt><dd>{typeof v === "number" ? v.toLocaleString("en-IN") : v}</dd></Fragment>
+                <Fragment key={k}><dt>{MODEL_INPUT_LABELS[k] || k}</dt><dd>{showInput(k, v)}</dd></Fragment>
               ))}
             </dl>
           </Panel>

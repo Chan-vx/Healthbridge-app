@@ -6,7 +6,11 @@ import { Empty, Kpi, Loading, PageHead, Panel, useApi } from "@/components/ui";
 import { inr } from "@/lib/format";
 
 interface FinanceDash {
-  bills: { count: number; total_billed: number; insurance_share: number; patient_share: number; flagged_amount: number; duplicates: number; high_risk_items: number; unpaid_patient_dues: number };
+  bills: {
+    count: number; total_billed: number; insurance_share: number; patient_share: number; flagged_amount: number; duplicates: number;
+    high_risk_items: number; unpaid_patient_dues: number; awaiting_confirmation: number; disputed: number; failed_checks: number;
+    mismatched_copies: number;
+  };
   claims: { count: number; by_status: Record<string, number>; claimed_amount: number; approved_amount: number; settled_amount: number; approval_rate: number | null };
   payments: { paid_in_full: number; on_emi_principal: number; emi_plans: number; emi_interest: number; emi_monthly_inflow: number };
   monthly: { month: string; billed: number; insurance: number; patient: number; flagged: number }[];
@@ -29,6 +33,8 @@ function Dashboard() {
         <Kpi label="Patient share" value={inr(b.patient_share)} sub={`${inr(b.unpaid_patient_dues)} still unpaid`} tone={b.unpaid_patient_dues > 0 ? "warn" : undefined} />
         <Kpi label="Claims settled" value={inr(c.settled_amount)} tone="good" sub={`${inr(c.approved_amount - c.settled_amount)} approved, awaiting payment`} />
         <Kpi label="Overcharges caught" value={inr(b.flagged_amount)} tone={b.flagged_amount ? "bad" : undefined} sub={`${b.duplicates} duplicates · ${b.high_risk_items} overpriced lines`} />
+        <Kpi label="Bills failing authenticity" value={b.failed_checks} tone={b.failed_checks ? "bad" : undefined}
+          sub={`${b.mismatched_copies} differ from hospital records · ${b.disputed} disputed · ${b.awaiting_confirmation} awaiting confirmation`} />
       </div>
 
       <div className="stack">

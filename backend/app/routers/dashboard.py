@@ -8,11 +8,12 @@ from sqlalchemy.orm import Session
 
 from app.database import get_db
 from app.models import Bill, Claim, CostEstimate, Hospital, Payment, Policy, User
-from app.routers.bills import summary_out
+from app.routers.bills import shared_with_patient, summary_out
 from app.routers.claims import claim_out
 from app.routers.policies import active_policy, policy_out
 from app.security import require_roles
 from app.services.ml import registry
+from app.services.verification import CONFIRMED, COPIES
 
 router = APIRouter(prefix="/api/dashboard", tags=["dashboards"])
 
@@ -42,7 +43,12 @@ def _claims_summary(claims: list[Claim]) -> dict:
     }
 
 
-def _bill_totals(bills: list[Bill]) -> dict:
+def _originals(bills: list[Bill]) -> list[Bill]:
+    """Leave out patients' copies of bills the hospital submitted, so no bill is counted twice."""
+    return [b for b in bills if b.verification_status not in COPIES]
+
+
+def _bill_totals(bills: list[Bill], all_bills: list[Bill]) -> dict:
     return {
         "count": len(bills),
         "total_billed": _money(sum(b.total_billed for b in bills)),
@@ -52,6 +58,10 @@ def _bill_totals(bills: list[Bill]) -> dict:
         "duplicates": sum(b.duplicate_count for b in bills),
         "high_risk_items": sum(b.high_risk_count for b in bills),
         "unpaid_patient_dues": _money(sum(b.patient_out_of_pocket for b in bills if b.payment_status == "unpaid")),
+        "awaiting_confirmation": sum(1 for b in all_bills if b.verification_status == "pending"),
+        "disputed": sum(1 for b in all_bills if b.verification_status == "disputed"),
+        "mismatched_copies": sum(1 for b in all_bills if b.verification_status == "mismatch"),
+        "failed_checks": sum(1 for b in all_bills if b.authenticity == "fail"),
     }
 
 
@@ -79,21 +89,23 @@ def _monthly_claims(claims: list[Claim]) -> list[dict]:
 
 @router.get("/patient")
 def patient_dashboard(user: User = Depends(require_roles("patient")), db: Session = Depends(get_db)):
-    bills = db.scalars(select(Bill).where(Bill.patient_id == user.id).order_by(Bill.created_at.desc())).all()
+    all_bills = db.scalars(select(Bill).where(Bill.patient_id == user.id, shared_with_patient())
+                          .order_by(Bill.created_at.desc())).all()
+    bills = _originals(all_bills)
     claims = db.scalars(select(Claim).where(Claim.patient_id == user.id).order_by(Claim.submitted_at.desc())).all()
     estimate = db.scalar(select(CostEstimate).where(CostEstimate.patient_id == user.id)
                          .order_by(CostEstimate.created_at.desc()))
     payments = db.scalars(select(Payment).where(Payment.patient_id == user.id)).all()
     policy = active_policy(db, user.id)
     return {
-        "bills": _bill_totals(bills),
+        "bills": _bill_totals(bills, all_bills),
         "claims": _claims_summary(claims),
         "active_policy": policy_out(policy).model_dump() if policy else None,
         "latest_estimate": {"predicted_usd": estimate.predicted_usd, "predicted_inr": estimate.predicted_inr,
                             "shap": estimate.shap, "inputs": estimate.inputs,
                             "created_at": estimate.created_at.isoformat()} if estimate else None,
         "emi_monthly_total": _money(sum(p.monthly_emi for p in payments if p.plan == "emi")),
-        "recent_bills": [summary_out(db, b).model_dump() for b in bills[:5]],
+        "recent_bills": [summary_out(db, b).model_dump() for b in all_bills[:5]],
         "recent_claims": [claim_out(c).model_dump() for c in claims[:5]],
     }
 
@@ -101,13 +113,14 @@ def patient_dashboard(user: User = Depends(require_roles("patient")), db: Sessio
 @router.get("/hospital")
 def hospital_dashboard(user: User = Depends(require_roles("hospital")), db: Session = Depends(get_db)):
     hid = user.hospital.id
-    bills = db.scalars(select(Bill).where(Bill.hospital_id == hid).order_by(Bill.created_at.desc())).all()
+    all_bills = db.scalars(select(Bill).where(Bill.hospital_id == hid).order_by(Bill.created_at.desc())).all()
+    bills = _originals(all_bills)
     claims = db.scalars(select(Claim).where(Claim.hospital_id == hid).order_by(Claim.submitted_at.desc())).all()
     summary = _claims_summary(claims)
     return {
         "hospital": {"name": user.hospital.name, "city": user.hospital.city,
                      "city_tier": user.hospital.city_tier, "hospital_type": user.hospital.hospital_type},
-        "bills": _bill_totals(bills),
+        "bills": _bill_totals(bills, all_bills),
         "claims": summary,
         "revenue": {
             "billed": _money(sum(b.total_billed for b in bills)),
@@ -118,10 +131,14 @@ def hospital_dashboard(user: User = Depends(require_roles("hospital")), db: Sess
             "patient_outstanding": _money(sum(b.patient_out_of_pocket for b in bills if b.payment_status == "unpaid")),
         },
         "monthly": _monthly_bills(bills),
+        "mismatched_copies": [summary_out(db, b).model_dump() for b in all_bills
+                              if b.verification_status == "mismatch"][:10],
+        "awaiting_confirmation": [summary_out(db, b).model_dump() for b in bills
+                                  if b.verification_status == "pending"][:10],
         "unclaimed_bills": [summary_out(db, b).model_dump() for b in bills
-                            if b.policy_id and b.insurance_pays > 0
+                            if b.policy_id and b.insurance_pays > 0 and b.verification_status in CONFIRMED
                             and not any(c.bill_id == b.id and c.status != "rejected" for c in claims)][:10],
-        "recent_bills": [summary_out(db, b).model_dump() for b in bills[:8]],
+        "recent_bills": [summary_out(db, b).model_dump() for b in all_bills[:8]],
         "recent_claims": [claim_out(c).model_dump() for c in claims[:8]],
     }
 
@@ -154,6 +171,7 @@ def insurer_dashboard(user: User = Depends(require_roles("insurer")), db: Sessio
     queue.sort(key=lambda c: -c.hybrid_risk_score)
     return {
         "insurer": {"name": user.insurer.name},
+        "fraud_threshold": registry.fraud.threshold if registry.fraud else None,
         "active_policies": len(policies),
         "claims": _claims_summary(claims),
         "monthly": _monthly_claims(claims),
@@ -165,7 +183,8 @@ def insurer_dashboard(user: User = Depends(require_roles("insurer")), db: Sessio
 
 @router.get("/finance")
 def finance_dashboard(_: User = Depends(require_roles("finance", "admin")), db: Session = Depends(get_db)):
-    bills = db.scalars(select(Bill)).all()
+    all_bills = db.scalars(select(Bill)).all()
+    bills = _originals(all_bills)
     claims = db.scalars(select(Claim)).all()
     payments = db.scalars(select(Payment)).all()
     hospitals = {h.id: h.name for h in db.scalars(select(Hospital))}
@@ -187,7 +206,7 @@ def finance_dashboard(_: User = Depends(require_roles("finance", "admin")), db: 
     emi_plans = [p for p in payments if p.plan == "emi"]
     recs = Counter(b.recommendations[0]["option"] for b in bills if b.recommendations)
     return {
-        "bills": _bill_totals(bills),
+        "bills": _bill_totals(bills, all_bills),
         "claims": _claims_summary(claims),
         "payments": {
             "paid_in_full": _money(sum(p.principal for p in payments if p.plan == "full")),
