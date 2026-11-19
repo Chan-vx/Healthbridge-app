@@ -8,6 +8,7 @@ from app.database import get_db
 from app.models import Policy, User
 from app.schemas import PolicyIn, PolicyOut
 from app.security import get_current_user, require_roles
+from app.services import coverage
 
 router = APIRouter(prefix="/api/policies", tags=["policies"])
 
@@ -52,3 +53,11 @@ def list_policies(user: User = Depends(get_current_user), db: Session = Depends(
     elif user.role == "hospital":
         raise HTTPException(403, "Hospitals cannot view insurance policies.")
     return [policy_out(p) for p in db.scalars(query)]
+
+
+@router.get("/me", summary="The patient's active policy and how much of its sum insured is left this year")
+def my_policy(user: User = Depends(require_roles("patient")), db: Session = Depends(get_db)):
+    policy = active_policy(db, user.id)
+    if policy is None:
+        return {"policy": None, "coverage": None}
+    return {"policy": policy_out(policy).model_dump(), "coverage": coverage.usage(db, policy)}

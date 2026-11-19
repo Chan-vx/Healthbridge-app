@@ -1,0 +1,4824 @@
+{
+ "cost": {
+  "dataset": {
+   "name": "Medical Cost Personal Dataset (insurance.csv)",
+   "rows": 1337,
+   "train": 1069,
+   "test": 268,
+   "target": "Annual medical expenses",
+   "features": [
+    "age",
+    "sex",
+    "bmi",
+    "children",
+    "smoker",
+    "region"
+   ],
+   "split": "80/20 random split, random_state=42 (Member 1's notebook)"
+  },
+  "metrics": {
+   "r2": 0.8975,
+   "train_r2": 0.8887,
+   "mae_inr": 214686.0,
+   "rmse_inr": 360156.0,
+   "mape_pct": 33.7,
+   "within_20_pct": 51.9
+  },
+  "comparison": [
+   {
+    "model": "Linear Regression",
+    "r2": 0.8069,
+    "mae_inr": 346713.0,
+    "rmse_inr": 494401.0,
+    "selected": false
+   },
+   {
+    "model": "Random Forest",
+    "r2": 0.8834,
+    "mae_inr": 213161.0,
+    "rmse_inr": 384156.0,
+    "selected": false
+   },
+   {
+    "model": "Gradient Boosting",
+    "r2": 0.8975,
+    "mae_inr": 214686.0,
+    "rmse_inr": 360156.0,
+    "selected": true
+   },
+   {
+    "model": "XGBoost",
+    "r2": 0.8922,
+    "mae_inr": 211663.0,
+    "rmse_inr": 369448.0,
+    "selected": false
+   }
+  ],
+  "by_group": [
+   {
+    "group": "Non-smokers",
+    "n": 208,
+    "r2": 0.4772,
+    "mae_inr": 210045.0
+   },
+   {
+    "group": "Smokers",
+    "n": 60,
+    "r2": 0.8107,
+    "mae_inr": 230773.0
+   }
+  ],
+  "feature_importance": [
+   {
+    "feature": "smoker_yes",
+    "importance": 0.5009
+   },
+   {
+    "feature": "bmi",
+    "importance": 0.1843
+   },
+   {
+    "feature": "smoker_no",
+    "importance": 0.1735
+   },
+   {
+    "feature": "age",
+    "importance": 0.1218
+   },
+   {
+    "feature": "children",
+    "importance": 0.0141
+   },
+   {
+    "feature": "region_northeast",
+    "importance": 0.0021
+   },
+   {
+    "feature": "region_northwest",
+    "importance": 0.0011
+   },
+   {
+    "feature": "region_southwest",
+    "importance": 0.0009
+   },
+   {
+    "feature": "sex_male",
+    "importance": 0.0006
+   },
+   {
+    "feature": "sex_female",
+    "importance": 0.0004
+   },
+   {
+    "feature": "region_southeast",
+    "importance": 0.0003
+   }
+  ],
+  "scatter": [
+   {
+    "actual": 721175.0,
+    "predicted": 873312.0,
+    "smoker": false
+   },
+   {
+    "actual": 473836.0,
+    "predicted": 586268.0,
+    "smoker": false
+   },
+   {
+    "actual": 949249.0,
+    "predicted": 1125939.0,
+    "smoker": false
+   },
+   {
+    "actual": 3215948.0,
+    "predicted": 3256269.0,
+    "smoker": true
+   },
+   {
+    "actual": 370446.0,
+    "predicted": 526765.0,
+    "smoker": false
+   },
+   {
+    "actual": 772290.0,
+    "predicted": 1036208.0,
+    "smoker": false
+   },
+   {
+    "actual": 3196465.0,
+    "predicted": 3330217.0,
+    "smoker": true
+   },
+   {
+    "actual": 178489.0,
+    "predicted": 356728.0,
+    "smoker": false
+   },
+   {
+    "actual": 609696.0,
+    "predicted": 925362.0,
+    "smoker": false
+   },
+   {
+    "actual": 851949.0,
+    "predicted": 920738.0,
+    "smoker": false
+   },
+   {
+    "actual": 1113448.0,
+    "predicted": 1122226.0,
+    "smoker": false
+   },
+   {
+    "actual": 2024670.0,
+    "predicted": 2059813.0,
+    "smoker": true
+   },
+   {
+    "actual": 3121425.0,
+    "predicted": 3237814.0,
+    "smoker": true
+   },
+   {
+    "actual": 1084302.0,
+    "predicted": 1126875.0,
+    "smoker": false
+   },
+   {
+    "actual": 2067949.0,
+    "predicted": 783425.0,
+    "smoker": false
+   },
+   {
+    "actual": 666322.0,
+    "predicted": 703139.0,
+    "smoker": false
+   },
+   {
+    "actual": 164346.0,
+    "predicted": 327033.0,
+    "smoker": false
+   },
+   {
+    "actual": 3212862.0,
+    "predicted": 3284761.0,
+    "smoker": true
+   },
+   {
+    "actual": 289199.0,
+    "predicted": 471062.0,
+    "smoker": false
+   },
+   {
+    "actual": 327635.0,
+    "predicted": 613780.0,
+    "smoker": false
+   },
+   {
+    "actual": 156046.0,
+    "predicted": 317713.0,
+    "smoker": false
+   },
+   {
+    "actual": 1724211.0,
+    "predicted": 1663730.0,
+    "smoker": true
+   },
+   {
+    "actual": 813474.0,
+    "predicted": 857307.0,
+    "smoker": false
+   },
+   {
+    "actual": 1749819.0,
+    "predicted": 1769434.0,
+    "smoker": true
+   },
+   {
+    "actual": 4576238.0,
+    "predicted": 3195054.0,
+    "smoker": true
+   },
+   {
+    "actual": 297126.0,
+    "predicted": 597789.0,
+    "smoker": false
+   },
+   {
+    "actual": 3643400.0,
+    "predicted": 3514102.0,
+    "smoker": true
+   },
+   {
+    "actual": 4365039.0,
+    "predicted": 3708133.0,
+    "smoker": true
+   },
+   {
+    "actual": 811603.0,
+    "predicted": 982593.0,
+    "smoker": false
+   },
+   {
+    "actual": 891160.0,
+    "predicted": 1421471.0,
+    "smoker": false
+   },
+   {
+    "actual": 360803.0,
+    "predicted": 430751.0,
+    "smoker": false
+   },
+   {
+    "actual": 750986.0,
+    "predicted": 912365.0,
+    "smoker": false
+   },
+   {
+    "actual": 142015.0,
+    "predicted": 379421.0,
+    "smoker": false
+   },
+   {
+    "actual": 1023708.0,
+    "predicted": 1287914.0,
+    "smoker": false
+   },
+   {
+    "actual": 5292946.0,
+    "predicted": 3786343.0,
+    "smoker": true
+   },
+   {
+    "actual": 819434.0,
+    "predicted": 868068.0,
+    "smoker": false
+   },
+   {
+    "actual": 389087.0,
+    "predicted": 548082.0,
+    "smoker": false
+   },
+   {
+    "actual": 472555.0,
+    "predicted": 491597.0,
+    "smoker": false
+   },
+   {
+    "actual": 1759253.0,
+    "predicted": 1875935.0,
+    "smoker": true
+   },
+   {
+    "actual": 683347.0,
+    "predicted": 785890.0,
+    "smoker": false
+   },
+   {
+    "actual": 228667.0,
+    "predicted": 296315.0,
+    "smoker": false
+   },
+   {
+    "actual": 1643238.0,
+    "predicted": 1729681.0,
+    "smoker": true
+   },
+   {
+    "actual": 3496335.0,
+    "predicted": 3449413.0,
+    "smoker": true
+   },
+   {
+    "actual": 827017.0,
+    "predicted": 891067.0,
+    "smoker": false
+   },
+   {
+    "actual": 763089.0,
+    "predicted": 713100.0,
+    "smoker": false
+   },
+   {
+    "actual": 262400.0,
+    "predicted": 352452.0,
+    "smoker": false
+   },
+   {
+    "actual": 184061.0,
+    "predicted": 336406.0,
+    "smoker": false
+   },
+   {
+    "actual": 609033.0,
+    "predicted": 702384.0,
+    "smoker": false
+   },
+   {
+    "actual": 343092.0,
+    "predicted": 475296.0,
+    "smoker": false
+   },
+   {
+    "actual": 526061.0,
+    "predicted": 654755.0,
+    "smoker": false
+   },
+   {
+    "actual": 361005.0,
+    "predicted": 583664.0,
+    "smoker": false
+   },
+   {
+    "actual": 477865.0,
+    "predicted": 486577.0,
+    "smoker": false
+   },
+   {
+    "actual": 1807021.0,
+    "predicted": 1956320.0,
+    "smoker": true
+   },
+   {
+    "actual": 115497.0,
+    "predicted": 297834.0,
+    "smoker": false
+   },
+   {
+    "actual": 594287.0,
+    "predicted": 679425.0,
+    "smoker": false
+   },
+   {
+    "actual": 641709.0,
+    "predicted": 759890.0,
+    "smoker": false
+   },
+   {
+    "actual": 826491.0,
+    "predicted": 894080.0,
+    "smoker": false
+   },
+   {
+    "actual": 298316.0,
+    "predicted": 526165.0,
+    "smoker": false
+   },
+   {
+    "actual": 3177468.0,
+    "predicted": 3386538.0,
+    "smoker": true
+   },
+   {
+    "actual": 602308.0,
+    "predicted": 676949.0,
+    "smoker": false
+   },
+   {
+    "actual": 911108.0,
+    "predicted": 1214916.0,
+    "smoker": false
+   },
+   {
+    "actual": 435354.0,
+    "predicted": 516466.0,
+    "smoker": false
+   },
+   {
+    "actual": 928576.0,
+    "predicted": 1151271.0,
+    "smoker": false
+   },
+   {
+    "actual": 141841.0,
+    "predicted": 189935.0,
+    "smoker": false
+   },
+   {
+    "actual": 947170.0,
+    "predicted": 1033362.0,
+    "smoker": false
+   },
+   {
+    "actual": 973563.0,
+    "predicted": 1183185.0,
+    "smoker": false
+   },
+   {
+    "actual": 504613.0,
+    "predicted": 598925.0,
+    "smoker": false
+   },
+   {
+    "actual": 3139867.0,
+    "predicted": 1965557.0,
+    "smoker": true
+   },
+   {
+    "actual": 1352722.0,
+    "predicted": 1489206.0,
+    "smoker": true
+   },
+   {
+    "actual": 2624460.0,
+    "predicted": 1362265.0,
+    "smoker": false
+   },
+   {
+    "actual": 829256.0,
+    "predicted": 1088718.0,
+    "smoker": false
+   },
+   {
+    "actual": 182888.0,
+    "predicted": 414834.0,
+    "smoker": false
+   },
+   {
+    "actual": 569254.0,
+    "predicted": 614429.0,
+    "smoker": false
+   },
+   {
+    "actual": 262899.0,
+    "predicted": 339267.0,
+    "smoker": false
+   },
+   {
+    "actual": 896097.0,
+    "predicted": 959537.0,
+    "smoker": false
+   },
+   {
+    "actual": 143499.0,
+    "predicted": 435863.0,
+    "smoker": false
+   },
+   {
+    "actual": 1043646.0,
+    "predicted": 1106708.0,
+    "smoker": false
+   },
+   {
+    "actual": 405870.0,
+    "predicted": 676230.0,
+    "smoker": false
+   },
+   {
+    "actual": 762120.0,
+    "predicted": 786961.0,
+    "smoker": false
+   },
+   {
+    "actual": 2511580.0,
+    "predicted": 1115524.0,
+    "smoker": false
+   },
+   {
+    "actual": 1394102.0,
+    "predicted": 549504.0,
+    "smoker": false
+   },
+   {
+    "actual": 1045180.0,
+    "predicted": 1306032.0,
+    "smoker": false
+   },
+   {
+    "actual": 1057517.0,
+    "predicted": 1189986.0,
+    "smoker": false
+   },
+   {
+    "actual": 1560910.0,
+    "predicted": 1110010.0,
+    "smoker": false
+   },
+   {
+    "actual": 2450423.0,
+    "predicted": 2260224.0,
+    "smoker": true
+   },
+   {
+    "actual": 1072849.0,
+    "predicted": 1530635.0,
+    "smoker": false
+   },
+   {
+    "actual": 302542.0,
+    "predicted": 338082.0,
+    "smoker": false
+   },
+   {
+    "actual": 142714.0,
+    "predicted": 270303.0,
+    "smoker": false
+   },
+   {
+    "actual": 164709.0,
+    "predicted": 300752.0,
+    "smoker": false
+   },
+   {
+    "actual": 151416.0,
+    "predicted": 341241.0,
+    "smoker": false
+   },
+   {
+    "actual": 1155345.0,
+    "predicted": 1409133.0,
+    "smoker": false
+   },
+   {
+    "actual": 1557568.0,
+    "predicted": 1491790.0,
+    "smoker": true
+   },
+   {
+    "actual": 466076.0,
+    "predicted": 568030.0,
+    "smoker": false
+   },
+   {
+    "actual": 126684.0,
+    "predicted": 235470.0,
+    "smoker": false
+   },
+   {
+    "actual": 144686.0,
+    "predicted": 259292.0,
+    "smoker": false
+   },
+   {
+    "actual": 3590117.0,
+    "predicted": 3487688.0,
+    "smoker": true
+   },
+   {
+    "actual": 788858.0,
+    "predicted": 1164132.0,
+    "smoker": false
+   },
+   {
+    "actual": 683309.0,
+    "predicted": 802989.0,
+    "smoker": false
+   },
+   {
+    "actual": 138994.0,
+    "predicted": 597917.0,
+    "smoker": false
+   },
+   {
+    "actual": 714172.0,
+    "predicted": 787961.0,
+    "smoker": false
+   },
+   {
+    "actual": 1152119.0,
+    "predicted": 1197295.0,
+    "smoker": false
+   },
+   {
+    "actual": 1026175.0,
+    "predicted": 1243522.0,
+    "smoker": false
+   },
+   {
+    "actual": 1929318.0,
+    "predicted": 2121561.0,
+    "smoker": true
+   },
+   {
+    "actual": 934957.0,
+    "predicted": 1248698.0,
+    "smoker": false
+   },
+   {
+    "actual": 3318625.0,
+    "predicted": 3249707.0,
+    "smoker": true
+   },
+   {
+    "actual": 135064.0,
+    "predicted": 267252.0,
+    "smoker": false
+   },
+   {
+    "actual": 3129256.0,
+    "predicted": 3255250.0,
+    "smoker": true
+   },
+   {
+    "actual": 1489195.0,
+    "predicted": 1442781.0,
+    "smoker": true
+   },
+   {
+    "actual": 1018384.0,
+    "predicted": 1170797.0,
+    "smoker": false
+   },
+   {
+    "actual": 393946.0,
+    "predicted": 474468.0,
+    "smoker": false
+   },
+   {
+    "actual": 524042.0,
+    "predicted": 632671.0,
+    "smoker": false
+   },
+   {
+    "actual": 1014501.0,
+    "predicted": 1027502.0,
+    "smoker": false
+   },
+   {
+    "actual": 464373.0,
+    "predicted": 572614.0,
+    "smoker": false
+   },
+   {
+    "actual": 543795.0,
+    "predicted": 705846.0,
+    "smoker": false
+   },
+   {
+    "actual": 139656.0,
+    "predicted": 199380.0,
+    "smoker": false
+   },
+   {
+    "actual": 164915.0,
+    "predicted": 372445.0,
+    "smoker": false
+   },
+   {
+    "actual": 224999.0,
+    "predicted": 404422.0,
+    "smoker": false
+   },
+   {
+    "actual": 94283.0,
+    "predicted": 229550.0,
+    "smoker": false
+   },
+   {
+    "actual": 152494.0,
+    "predicted": 511066.0,
+    "smoker": false
+   },
+   {
+    "actual": 838899.0,
+    "predicted": 1116678.0,
+    "smoker": false
+   },
+   {
+    "actual": 3687175.0,
+    "predicted": 3520230.0,
+    "smoker": true
+   },
+   {
+    "actual": 1029605.0,
+    "predicted": 388686.0,
+    "smoker": false
+   },
+   {
+    "actual": 593672.0,
+    "predicted": 775047.0,
+    "smoker": false
+   },
+   {
+    "actual": 492554.0,
+    "predicted": 630176.0,
+    "smoker": false
+   },
+   {
+    "actual": 2352236.0,
+    "predicted": 759296.0,
+    "smoker": false
+   },
+   {
+    "actual": 570705.0,
+    "predicted": 607693.0,
+    "smoker": false
+   },
+   {
+    "actual": 421648.0,
+    "predicted": 506664.0,
+    "smoker": false
+   },
+   {
+    "actual": 1082479.0,
+    "predicted": 1200021.0,
+    "smoker": false
+   },
+   {
+    "actual": 3164479.0,
+    "predicted": 3214336.0,
+    "smoker": true
+   },
+   {
+    "actual": 4052429.0,
+    "predicted": 3893435.0,
+    "smoker": true
+   },
+   {
+    "actual": 2418733.0,
+    "predicted": 2334765.0,
+    "smoker": true
+   },
+   {
+    "actual": 658629.0,
+    "predicted": 819536.0,
+    "smoker": false
+   },
+   {
+    "actual": 177425.0,
+    "predicted": 325145.0,
+    "smoker": false
+   },
+   {
+    "actual": 920104.0,
+    "predicted": 1018430.0,
+    "smoker": false
+   },
+   {
+    "actual": 495708.0,
+    "predicted": 493852.0,
+    "smoker": false
+   },
+   {
+    "actual": 378579.0,
+    "predicted": 938058.0,
+    "smoker": false
+   },
+   {
+    "actual": 3567627.0,
+    "predicted": 3754409.0,
+    "smoker": true
+   },
+   {
+    "actual": 1626369.0,
+    "predicted": 1730910.0,
+    "smoker": true
+   },
+   {
+    "actual": 1473126.0,
+    "predicted": 1607368.0,
+    "smoker": true
+   },
+   {
+    "actual": 205286.0,
+    "predicted": 302945.0,
+    "smoker": false
+   },
+   {
+    "actual": 427627.0,
+    "predicted": 526935.0,
+    "smoker": false
+   },
+   {
+    "actual": 378828.0,
+    "predicted": 611350.0,
+    "smoker": false
+   },
+   {
+    "actual": 3806646.0,
+    "predicted": 3508637.0,
+    "smoker": true
+   },
+   {
+    "actual": 2117920.0,
+    "predicted": 1013203.0,
+    "smoker": false
+   },
+   {
+    "actual": 95184.0,
+    "predicted": 199397.0,
+    "smoker": false
+   },
+   {
+    "actual": 468927.0,
+    "predicted": 522083.0,
+    "smoker": false
+   },
+   {
+    "actual": 940117.0,
+    "predicted": 413429.0,
+    "smoker": false
+   },
+   {
+    "actual": 633040.0,
+    "predicted": 739871.0,
+    "smoker": false
+   },
+   {
+    "actual": 3566498.0,
+    "predicted": 3767544.0,
+    "smoker": true
+   },
+   {
+    "actual": 1125065.0,
+    "predicted": 1140236.0,
+    "smoker": false
+   },
+   {
+    "actual": 545438.0,
+    "predicted": 611927.0,
+    "smoker": false
+   },
+   {
+    "actual": 579797.0,
+    "predicted": 660182.0,
+    "smoker": false
+   },
+   {
+    "actual": 394339.0,
+    "predicted": 455307.0,
+    "smoker": false
+   },
+   {
+    "actual": 1188479.0,
+    "predicted": 1180163.0,
+    "smoker": false
+   },
+   {
+    "actual": 547261.0,
+    "predicted": 689416.0,
+    "smoker": false
+   },
+   {
+    "actual": 2858508.0,
+    "predicted": 2953086.0,
+    "smoker": true
+   },
+   {
+    "actual": 3827421.0,
+    "predicted": 3486599.0,
+    "smoker": true
+   },
+   {
+    "actual": 782933.0,
+    "predicted": 768966.0,
+    "smoker": false
+   },
+   {
+    "actual": 687291.0,
+    "predicted": 886851.0,
+    "smoker": false
+   },
+   {
+    "actual": 733327.0,
+    "predicted": 870515.0,
+    "smoker": false
+   },
+   {
+    "actual": 906686.0,
+    "predicted": 1039423.0,
+    "smoker": false
+   },
+   {
+    "actual": 453018.0,
+    "predicted": 402352.0,
+    "smoker": false
+   },
+   {
+    "actual": 982937.0,
+    "predicted": 1023090.0,
+    "smoker": false
+   },
+   {
+    "actual": 1015224.0,
+    "predicted": 1023090.0,
+    "smoker": false
+   },
+   {
+    "actual": 3617052.0,
+    "predicted": 3602971.0,
+    "smoker": true
+   },
+   {
+    "actual": 3283189.0,
+    "predicted": 3447147.0,
+    "smoker": true
+   },
+   {
+    "actual": 876521.0,
+    "predicted": 1001972.0,
+    "smoker": false
+   },
+   {
+    "actual": 1418077.0,
+    "predicted": 1596995.0,
+    "smoker": true
+   },
+   {
+    "actual": 266139.0,
+    "predicted": 440591.0,
+    "smoker": false
+   },
+   {
+    "actual": 320480.0,
+    "predicted": 420925.0,
+    "smoker": false
+   },
+   {
+    "actual": 351911.0,
+    "predicted": 420671.0,
+    "smoker": false
+   },
+   {
+    "actual": 135542.0,
+    "predicted": 375114.0,
+    "smoker": false
+   },
+   {
+    "actual": 343414.0,
+    "predicted": 411584.0,
+    "smoker": false
+   },
+   {
+    "actual": 982204.0,
+    "predicted": 1117832.0,
+    "smoker": false
+   },
+   {
+    "actual": 689800.0,
+    "predicted": 777588.0,
+    "smoker": false
+   },
+   {
+    "actual": 2716938.0,
+    "predicted": 1291635.0,
+    "smoker": true
+   },
+   {
+    "actual": 215616.0,
+    "predicted": 315509.0,
+    "smoker": false
+   },
+   {
+    "actual": 687545.0,
+    "predicted": 886851.0,
+    "smoker": false
+   },
+   {
+    "actual": 699530.0,
+    "predicted": 757941.0,
+    "smoker": false
+   },
+   {
+    "actual": 841715.0,
+    "predicted": 965985.0,
+    "smoker": false
+   },
+   {
+    "actual": 1171928.0,
+    "predicted": 1392770.0,
+    "smoker": false
+   },
+   {
+    "actual": 237002.0,
+    "predicted": 407064.0,
+    "smoker": false
+   },
+   {
+    "actual": 2157404.0,
+    "predicted": 1108498.0,
+    "smoker": false
+   },
+   {
+    "actual": 981941.0,
+    "predicted": 1059543.0,
+    "smoker": false
+   },
+   {
+    "actual": 3320276.0,
+    "predicted": 3233191.0,
+    "smoker": true
+   },
+   {
+    "actual": 879344.0,
+    "predicted": 989472.0,
+    "smoker": false
+   },
+   {
+    "actual": 298601.0,
+    "predicted": 516546.0,
+    "smoker": false
+   },
+   {
+    "actual": 298093.0,
+    "predicted": 501300.0,
+    "smoker": false
+   },
+   {
+    "actual": 175739.0,
+    "predicted": 310132.0,
+    "smoker": false
+   },
+   {
+    "actual": 3213013.0,
+    "predicted": 3362876.0,
+    "smoker": true
+   },
+   {
+    "actual": 1483949.0,
+    "predicted": 389481.0,
+    "smoker": false
+   },
+   {
+    "actual": 1982676.0,
+    "predicted": 2064373.0,
+    "smoker": true
+   },
+   {
+    "actual": 876885.0,
+    "predicted": 1069085.0,
+    "smoker": false
+   },
+   {
+    "actual": 378716.0,
+    "predicted": 610657.0,
+    "smoker": false
+   },
+   {
+    "actual": 182450.0,
+    "predicted": 266036.0,
+    "smoker": false
+   },
+   {
+    "actual": 93915.0,
+    "predicted": 233306.0,
+    "smoker": false
+   },
+   {
+    "actual": 3247402.0,
+    "predicted": 3248643.0,
+    "smoker": true
+   },
+   {
+    "actual": 1674747.0,
+    "predicted": 561996.0,
+    "smoker": false
+   },
+   {
+    "actual": 1162107.0,
+    "predicted": 1419678.0,
+    "smoker": false
+   },
+   {
+    "actual": 1264117.0,
+    "predicted": 1518146.0,
+    "smoker": false
+   },
+   {
+    "actual": 2801274.0,
+    "predicted": 2911915.0,
+    "smoker": true
+   },
+   {
+    "actual": 1375956.0,
+    "predicted": 1537789.0,
+    "smoker": true
+   },
+   {
+    "actual": 405790.0,
+    "predicted": 435664.0,
+    "smoker": false
+   },
+   {
+    "actual": 1724864.0,
+    "predicted": 1028382.0,
+    "smoker": false
+   },
+   {
+    "actual": 1654477.0,
+    "predicted": 1766152.0,
+    "smoker": true
+   },
+   {
+    "actual": 416035.0,
+    "predicted": 466342.0,
+    "smoker": false
+   },
+   {
+    "actual": 643180.0,
+    "predicted": 685170.0,
+    "smoker": false
+   },
+   {
+    "actual": 617644.0,
+    "predicted": 700110.0,
+    "smoker": false
+   },
+   {
+    "actual": 223279.0,
+    "predicted": 394378.0,
+    "smoker": false
+   },
+   {
+    "actual": 3481787.0,
+    "predicted": 3520691.0,
+    "smoker": true
+   },
+   {
+    "actual": 1865724.0,
+    "predicted": 1987829.0,
+    "smoker": true
+   },
+   {
+    "actual": 772057.0,
+    "predicted": 769396.0,
+    "smoker": false
+   },
+   {
+    "actual": 396707.0,
+    "predicted": 496853.0,
+    "smoker": false
+   },
+   {
+    "actual": 597741.0,
+    "predicted": 657092.0,
+    "smoker": false
+   },
+   {
+    "actual": 1048282.0,
+    "predicted": 1285896.0,
+    "smoker": false
+   },
+   {
+    "actual": 1173042.0,
+    "predicted": 131650.0,
+    "smoker": false
+   },
+   {
+    "actual": 199593.0,
+    "predicted": 218125.0,
+    "smoker": false
+   },
+   {
+    "actual": 576742.0,
+    "predicted": 776123.0,
+    "smoker": false
+   },
+   {
+    "actual": 732658.0,
+    "predicted": 847332.0,
+    "smoker": false
+   },
+   {
+    "actual": 182910.0,
+    "predicted": 380834.0,
+    "smoker": false
+   },
+   {
+    "actual": 266730.0,
+    "predicted": 400552.0,
+    "smoker": false
+   },
+   {
+    "actual": 3830543.0,
+    "predicted": 3755927.0,
+    "smoker": true
+   },
+   {
+    "actual": 3834682.0,
+    "predicted": 3759638.0,
+    "smoker": true
+   },
+   {
+    "actual": 1244040.0,
+    "predicted": 1564150.0,
+    "smoker": false
+   },
+   {
+    "actual": 778366.0,
+    "predicted": 888141.0,
+    "smoker": false
+   },
+   {
+    "actual": 3891809.0,
+    "predicted": 3982987.0,
+    "smoker": true
+   },
+   {
+    "actual": 3411064.0,
+    "predicted": 3478318.0,
+    "smoker": true
+   },
+   {
+    "actual": 800473.0,
+    "predicted": 816589.0,
+    "smoker": false
+   },
+   {
+    "actual": 2873281.0,
+    "predicted": 2953892.0,
+    "smoker": true
+   },
+   {
+    "actual": 334676.0,
+    "predicted": 431659.0,
+    "smoker": false
+   },
+   {
+    "actual": 1077452.0,
+    "predicted": 1206039.0,
+    "smoker": false
+   },
+   {
+    "actual": 2945806.0,
+    "predicted": 3200238.0,
+    "smoker": true
+   },
+   {
+    "actual": 321816.0,
+    "predicted": 562972.0,
+    "smoker": false
+   },
+   {
+    "actual": 496318.0,
+    "predicted": 459169.0,
+    "smoker": false
+   },
+   {
+    "actual": 957394.0,
+    "predicted": 1233458.0,
+    "smoker": false
+   },
+   {
+    "actual": 687034.0,
+    "predicted": 855907.0,
+    "smoker": false
+   },
+   {
+    "actual": 1095956.0,
+    "predicted": 1248459.0,
+    "smoker": false
+   },
+   {
+    "actual": 135276.0,
+    "predicted": 156565.0,
+    "smoker": false
+   },
+   {
+    "actual": 250810.0,
+    "predicted": 295872.0,
+    "smoker": false
+   },
+   {
+    "actual": 281617.0,
+    "predicted": 490294.0,
+    "smoker": false
+   },
+   {
+    "actual": 285774.0,
+    "predicted": 476552.0,
+    "smoker": false
+   },
+   {
+    "actual": 224064.0,
+    "predicted": 354563.0,
+    "smoker": false
+   },
+   {
+    "actual": 1683058.0,
+    "predicted": 654778.0,
+    "smoker": false
+   },
+   {
+    "actual": 741363.0,
+    "predicted": 876467.0,
+    "smoker": false
+   },
+   {
+    "actual": 135459.0,
+    "predicted": 250053.0,
+    "smoker": false
+   },
+   {
+    "actual": 794060.0,
+    "predicted": 931061.0,
+    "smoker": false
+   },
+   {
+    "actual": 364507.0,
+    "predicted": 615653.0,
+    "smoker": false
+   },
+   {
+    "actual": 597340.0,
+    "predicted": 970530.0,
+    "smoker": false
+   },
+   {
+    "actual": 607870.0,
+    "predicted": 336994.0,
+    "smoker": false
+   },
+   {
+    "actual": 698034.0,
+    "predicted": 769366.0,
+    "smoker": false
+   },
+   {
+    "actual": 225700.0,
+    "predicted": 435967.0,
+    "smoker": false
+   },
+   {
+    "actual": 967624.0,
+    "predicted": 991406.0,
+    "smoker": false
+   },
+   {
+    "actual": 1008199.0,
+    "predicted": 1139124.0,
+    "smoker": false
+   },
+   {
+    "actual": 1129412.0,
+    "predicted": 1168114.0,
+    "smoker": false
+   },
+   {
+    "actual": 4981776.0,
+    "predicted": 3588253.0,
+    "smoker": true
+   },
+   {
+    "actual": 1141073.0,
+    "predicted": 1163293.0,
+    "smoker": true
+   },
+   {
+    "actual": 998431.0,
+    "predicted": 979892.0,
+    "smoker": false
+   },
+   {
+    "actual": 507398.0,
+    "predicted": 626535.0,
+    "smoker": false
+   },
+   {
+    "actual": 668953.0,
+    "predicted": 643634.0,
+    "smoker": false
+   },
+   {
+    "actual": 2102666.0,
+    "predicted": 1009230.0,
+    "smoker": false
+   },
+   {
+    "actual": 3109623.0,
+    "predicted": 3312932.0,
+    "smoker": true
+   },
+   {
+    "actual": 3905609.0,
+    "predicted": 3660755.0,
+    "smoker": true
+   },
+   {
+    "actual": 1074780.0,
+    "predicted": 1370682.0,
+    "smoker": false
+   },
+   {
+    "actual": 1147983.0,
+    "predicted": 1173849.0,
+    "smoker": false
+   },
+   {
+    "actual": 1152638.0,
+    "predicted": 1199612.0,
+    "smoker": false
+   },
+   {
+    "actual": 325838.0,
+    "predicted": 595989.0,
+    "smoker": false
+   },
+   {
+    "actual": 3934522.0,
+    "predicted": 3944028.0,
+    "smoker": true
+   },
+   {
+    "actual": 708378.0,
+    "predicted": 1035625.0,
+    "smoker": false
+   }
+  ],
+  "usd_to_inr": 83.0
+ },
+ "fraud": {
+  "dataset": {
+   "name": "Health Insurance Fraud Claims (Kaggle)",
+   "rows": 4500,
+   "fraud": 270,
+   "fraud_pct": 6.0,
+   "train": 3600,
+   "test": 900,
+   "test_fraud": 54,
+   "split": "Stratified 80/20 split, random_state=42 (src/11_robust_preprocess.py)",
+   "removed": "IDs, ClaimStatus, Cluster (leak the answer); DiagnosisCode, ProcedureCode (codes with 100% fraud rate)"
+  },
+  "threshold": 0.05,
+  "xgboost": {
+   "precision": 0.9643,
+   "recall": 1.0,
+   "f1": 0.9818,
+   "accuracy": 0.9978,
+   "false_positive_rate": 0.0024,
+   "confusion": {
+    "tn": 844,
+    "fp": 2,
+    "fn": 0,
+    "tp": 54
+   },
+   "roc_auc": 1.0,
+   "pr_auc": 0.9993,
+   "roc": [
+    {
+     "fpr": 0.0,
+     "tpr": 0.0
+    },
+    {
+     "fpr": 0.0,
+     "tpr": 0.0185
+    },
+    {
+     "fpr": 0.0,
+     "tpr": 0.9815
+    },
+    {
+     "fpr": 0.0024,
+     "tpr": 0.9815
+    },
+    {
+     "fpr": 0.0024,
+     "tpr": 1.0
+    },
+    {
+     "fpr": 0.5969,
+     "tpr": 1.0
+    },
+    {
+     "fpr": 0.5993,
+     "tpr": 1.0
+    },
+    {
+     "fpr": 0.6608,
+     "tpr": 1.0
+    },
+    {
+     "fpr": 0.6631,
+     "tpr": 1.0
+    },
+    {
+     "fpr": 0.9409,
+     "tpr": 1.0
+    },
+    {
+     "fpr": 0.9433,
+     "tpr": 1.0
+    },
+    {
+     "fpr": 0.9444,
+     "tpr": 1.0
+    },
+    {
+     "fpr": 0.9468,
+     "tpr": 1.0
+    },
+    {
+     "fpr": 1.0,
+     "tpr": 1.0
+    }
+   ]
+  },
+  "xgboost_at_050": {
+   "precision": 0.9815,
+   "recall": 0.9815,
+   "f1": 0.9815,
+   "accuracy": 0.9978,
+   "false_positive_rate": 0.0012,
+   "confusion": {
+    "tn": 845,
+    "fp": 1,
+    "fn": 1,
+    "tp": 53
+   }
+  },
+  "isolation_forest": {
+   "precision": 0.0,
+   "recall": 0.0,
+   "f1": 0.0,
+   "accuracy": 0.94,
+   "false_positive_rate": 0.0,
+   "confusion": {
+    "tn": 846,
+    "fp": 0,
+    "fn": 54,
+    "tp": 0
+   },
+   "roc_auc": 0.6613,
+   "pr_auc": 0.1279,
+   "roc": [
+    {
+     "fpr": 0.0,
+     "tpr": 0.0
+    },
+    {
+     "fpr": 0.0012,
+     "tpr": 0.0
+    },
+    {
+     "fpr": 0.0106,
+     "tpr": 0.037
+    },
+    {
+     "fpr": 0.0142,
+     "tpr": 0.0556
+    },
+    {
+     "fpr": 0.0142,
+     "tpr": 0.0741
+    },
+    {
+     "fpr": 0.0213,
+     "tpr": 0.0926
+    },
+    {
+     "fpr": 0.0225,
+     "tpr": 0.1111
+    },
+    {
+     "fpr": 0.0236,
+     "tpr": 0.1296
+    },
+    {
+     "fpr": 0.052,
+     "tpr": 0.1296
+    },
+    {
+     "fpr": 0.065,
+     "tpr": 0.1481
+    },
+    {
+     "fpr": 0.0757,
+     "tpr": 0.1667
+    },
+    {
+     "fpr": 0.0792,
+     "tpr": 0.1852
+    },
+    {
+     "fpr": 0.0792,
+     "tpr": 0.2037
+    },
+    {
+     "fpr": 0.1005,
+     "tpr": 0.2222
+    },
+    {
+     "fpr": 0.104,
+     "tpr": 0.2407
+    },
+    {
+     "fpr": 0.117,
+     "tpr": 0.2593
+    },
+    {
+     "fpr": 0.1395,
+     "tpr": 0.2593
+    },
+    {
+     "fpr": 0.1631,
+     "tpr": 0.2778
+    },
+    {
+     "fpr": 0.195,
+     "tpr": 0.2963
+    },
+    {
+     "fpr": 0.2009,
+     "tpr": 0.3148
+    },
+    {
+     "fpr": 0.2009,
+     "tpr": 0.3333
+    },
+    {
+     "fpr": 0.2033,
+     "tpr": 0.3519
+    },
+    {
+     "fpr": 0.2092,
+     "tpr": 0.3704
+    },
+    {
+     "fpr": 0.2128,
+     "tpr": 0.3889
+    },
+    {
+     "fpr": 0.227,
+     "tpr": 0.3889
+    },
+    {
+     "fpr": 0.2459,
+     "tpr": 0.4074
+    },
+    {
+     "fpr": 0.2506,
+     "tpr": 0.4259
+    },
+    {
+     "fpr": 0.2825,
+     "tpr": 0.4444
+    },
+    {
+     "fpr": 0.2825,
+     "tpr": 0.463
+    },
+    {
+     "fpr": 0.2861,
+     "tpr": 0.4815
+    },
+    {
+     "fpr": 0.2943,
+     "tpr": 0.5
+    },
+    {
+     "fpr": 0.2991,
+     "tpr": 0.5185
+    },
+    {
+     "fpr": 0.3381,
+     "tpr": 0.5185
+    },
+    {
+     "fpr": 0.3452,
+     "tpr": 0.537
+    },
+    {
+     "fpr": 0.3818,
+     "tpr": 0.5556
+    },
+    {
+     "fpr": 0.3877,
+     "tpr": 0.5741
+    },
+    {
+     "fpr": 0.3877,
+     "tpr": 0.5926
+    },
+    {
+     "fpr": 0.4007,
+     "tpr": 0.6111
+    },
+    {
+     "fpr": 0.4255,
+     "tpr": 0.6296
+    },
+    {
+     "fpr": 0.4279,
+     "tpr": 0.6481
+    },
+    {
+     "fpr": 0.4291,
+     "tpr": 0.6481
+    },
+    {
+     "fpr": 0.4314,
+     "tpr": 0.6667
+    },
+    {
+     "fpr": 0.4385,
+     "tpr": 0.6852
+    },
+    {
+     "fpr": 0.4586,
+     "tpr": 0.7037
+    },
+    {
+     "fpr": 0.4586,
+     "tpr": 0.7222
+    },
+    {
+     "fpr": 0.5012,
+     "tpr": 0.7407
+    },
+    {
+     "fpr": 0.5035,
+     "tpr": 0.7778
+    },
+    {
+     "fpr": 0.5579,
+     "tpr": 0.7963
+    },
+    {
+     "fpr": 0.5638,
+     "tpr": 0.7963
+    },
+    {
+     "fpr": 0.5922,
+     "tpr": 0.8148
+    },
+    {
+     "fpr": 0.6371,
+     "tpr": 0.8333
+    },
+    {
+     "fpr": 0.6501,
+     "tpr": 0.8519
+    },
+    {
+     "fpr": 0.6501,
+     "tpr": 0.8704
+    },
+    {
+     "fpr": 0.6525,
+     "tpr": 0.8889
+    },
+    {
+     "fpr": 0.7033,
+     "tpr": 0.9074
+    },
+    {
+     "fpr": 0.7258,
+     "tpr": 0.9444
+    },
+    {
+     "fpr": 0.8132,
+     "tpr": 0.9444
+    },
+    {
+     "fpr": 0.8251,
+     "tpr": 0.963
+    },
+    {
+     "fpr": 0.9716,
+     "tpr": 0.9815
+    },
+    {
+     "fpr": 1.0,
+     "tpr": 1.0
+    }
+   ]
+  },
+  "hybrid": {
+   "precision": 0.9815,
+   "recall": 0.9815,
+   "f1": 0.9815,
+   "accuracy": 0.9978,
+   "false_positive_rate": 0.0012,
+   "confusion": {
+    "tn": 845,
+    "fp": 1,
+    "fn": 1,
+    "tp": 53
+   },
+   "roc_auc": 1.0,
+   "pr_auc": 0.9993,
+   "roc": [
+    {
+     "fpr": 0.0,
+     "tpr": 0.0
+    },
+    {
+     "fpr": 0.0,
+     "tpr": 0.0185
+    },
+    {
+     "fpr": 0.0,
+     "tpr": 0.9815
+    },
+    {
+     "fpr": 0.0024,
+     "tpr": 0.9815
+    },
+    {
+     "fpr": 0.0024,
+     "tpr": 1.0
+    },
+    {
+     "fpr": 1.0,
+     "tpr": 1.0
+    }
+   ],
+   "bands": [
+    {
+     "level": "LOW",
+     "claims": 846,
+     "fraud": 1,
+     "fraud_rate": 0.0012
+    },
+    {
+     "level": "MEDIUM",
+     "claims": 0,
+     "fraud": 0,
+     "fraud_rate": 0.0
+    },
+    {
+     "level": "HIGH",
+     "claims": 54,
+     "fraud": 53,
+     "fraud_rate": 0.9815
+    }
+   ]
+  },
+  "threshold_sweep": [
+   {
+    "threshold": 0.05,
+    "val_precision": 1.0,
+    "val_recall": 1.0,
+    "val_f1": 1.0,
+    "test_fp": 2,
+    "test_fn": 0
+   },
+   {
+    "threshold": 0.1,
+    "val_precision": 1.0,
+    "val_recall": 1.0,
+    "val_f1": 1.0,
+    "test_fp": 2,
+    "test_fn": 0
+   },
+   {
+    "threshold": 0.15,
+    "val_precision": 1.0,
+    "val_recall": 1.0,
+    "val_f1": 1.0,
+    "test_fp": 2,
+    "test_fn": 0
+   },
+   {
+    "threshold": 0.2,
+    "val_precision": 1.0,
+    "val_recall": 1.0,
+    "val_f1": 1.0,
+    "test_fp": 2,
+    "test_fn": 0
+   },
+   {
+    "threshold": 0.25,
+    "val_precision": 1.0,
+    "val_recall": 1.0,
+    "val_f1": 1.0,
+    "test_fp": 2,
+    "test_fn": 0
+   },
+   {
+    "threshold": 0.3,
+    "val_precision": 1.0,
+    "val_recall": 1.0,
+    "val_f1": 1.0,
+    "test_fp": 2,
+    "test_fn": 0
+   },
+   {
+    "threshold": 0.35,
+    "val_precision": 1.0,
+    "val_recall": 1.0,
+    "val_f1": 1.0,
+    "test_fp": 2,
+    "test_fn": 1
+   },
+   {
+    "threshold": 0.4,
+    "val_precision": 1.0,
+    "val_recall": 1.0,
+    "val_f1": 1.0,
+    "test_fp": 1,
+    "test_fn": 1
+   },
+   {
+    "threshold": 0.45,
+    "val_precision": 1.0,
+    "val_recall": 1.0,
+    "val_f1": 1.0,
+    "test_fp": 1,
+    "test_fn": 1
+   },
+   {
+    "threshold": 0.5,
+    "val_precision": 1.0,
+    "val_recall": 1.0,
+    "val_f1": 1.0,
+    "test_fp": 1,
+    "test_fn": 1
+   },
+   {
+    "threshold": 0.6,
+    "val_precision": 1.0,
+    "val_recall": 1.0,
+    "val_f1": 1.0,
+    "test_fp": 1,
+    "test_fn": 1
+   },
+   {
+    "threshold": 0.7,
+    "val_precision": 1.0,
+    "val_recall": 1.0,
+    "val_f1": 1.0,
+    "test_fp": 1,
+    "test_fn": 1
+   },
+   {
+    "threshold": 0.8,
+    "val_precision": 1.0,
+    "val_recall": 1.0,
+    "val_f1": 1.0,
+    "test_fp": 1,
+    "test_fn": 1
+   },
+   {
+    "threshold": 0.9,
+    "val_precision": 1.0,
+    "val_recall": 1.0,
+    "val_f1": 1.0,
+    "test_fp": 1,
+    "test_fn": 1
+   }
+  ],
+  "cross_validation": {
+   "folds": [
+    {
+     "roc_auc": 1.0,
+     "f1": 1.0
+    },
+    {
+     "roc_auc": 1.0,
+     "f1": 1.0
+    },
+    {
+     "roc_auc": 1.0,
+     "f1": 1.0
+    },
+    {
+     "roc_auc": 0.9972,
+     "f1": 0.9815
+    },
+    {
+     "roc_auc": 1.0,
+     "f1": 1.0
+    }
+   ],
+   "roc_auc_mean": 0.9994,
+   "f1_mean": 0.9963,
+   "f1_std": 0.0074
+  },
+  "simple_rule": {
+   "claim_amount_min_usd": 7465.07,
+   "income_max_usd": 52769.09,
+   "precision": 1.0,
+   "recall": 1.0,
+   "f1": 1.0,
+   "accuracy": 1.0,
+   "false_positive_rate": 0.0,
+   "confusion": {
+    "tn": 846,
+    "fp": 0,
+    "fn": 0,
+    "tp": 54
+   }
+  },
+  "feature_importance": [
+   {
+    "feature": "ClaimAmount",
+    "importance": 0.3695
+   },
+   {
+    "feature": "PatientIncome",
+    "importance": 0.2827
+   },
+   {
+    "feature": "ProviderLocation_North Jacob",
+    "importance": 0.0401
+   },
+   {
+    "feature": "ProviderLocation_Murrayton",
+    "importance": 0.0376
+   },
+   {
+    "feature": "ProviderLocation_East Angela",
+    "importance": 0.0312
+   },
+   {
+    "feature": "ProviderLocation_East John",
+    "importance": 0.0309
+   },
+   {
+    "feature": "ProviderLocation_Henryhaven",
+    "importance": 0.0295
+   },
+   {
+    "feature": "ProviderSpecialty_Cardiology",
+    "importance": 0.0199
+   },
+   {
+    "feature": "PatientMaritalStatus_Married",
+    "importance": 0.0128
+   },
+   {
+    "feature": "ClaimYear",
+    "importance": 0.0117
+   }
+  ],
+  "scatter": [
+   {
+    "amount_inr": 664330.0,
+    "income_inr": 2015821.0,
+    "fraud": true
+   },
+   {
+    "amount_inr": 736308.0,
+    "income_inr": 1700135.0,
+    "fraud": true
+   },
+   {
+    "amount_inr": 752852.0,
+    "income_inr": 1693682.0,
+    "fraud": true
+   },
+   {
+    "amount_inr": 825743.0,
+    "income_inr": 4252051.0,
+    "fraud": true
+   },
+   {
+    "amount_inr": 717512.0,
+    "income_inr": 3108045.0,
+    "fraud": true
+   },
+   {
+    "amount_inr": 663617.0,
+    "income_inr": 1720986.0,
+    "fraud": true
+   },
+   {
+    "amount_inr": 824457.0,
+    "income_inr": 3833769.0,
+    "fraud": true
+   },
+   {
+    "amount_inr": 685071.0,
+    "income_inr": 3043601.0,
+    "fraud": true
+   },
+   {
+    "amount_inr": 643863.0,
+    "income_inr": 2993347.0,
+    "fraud": true
+   },
+   {
+    "amount_inr": 785380.0,
+    "income_inr": 2424706.0,
+    "fraud": true
+   },
+   {
+    "amount_inr": 694362.0,
+    "income_inr": 3703204.0,
+    "fraud": true
+   },
+   {
+    "amount_inr": 827432.0,
+    "income_inr": 3361162.0,
+    "fraud": true
+   },
+   {
+    "amount_inr": 627392.0,
+    "income_inr": 1909364.0,
+    "fraud": true
+   },
+   {
+    "amount_inr": 716087.0,
+    "income_inr": 1913123.0,
+    "fraud": true
+   },
+   {
+    "amount_inr": 781902.0,
+    "income_inr": 2697198.0,
+    "fraud": true
+   },
+   {
+    "amount_inr": 649745.0,
+    "income_inr": 2150800.0,
+    "fraud": true
+   },
+   {
+    "amount_inr": 734243.0,
+    "income_inr": 3924440.0,
+    "fraud": true
+   },
+   {
+    "amount_inr": 710832.0,
+    "income_inr": 3974004.0,
+    "fraud": true
+   },
+   {
+    "amount_inr": 757989.0,
+    "income_inr": 4034515.0,
+    "fraud": true
+   },
+   {
+    "amount_inr": 643409.0,
+    "income_inr": 2067293.0,
+    "fraud": true
+   },
+   {
+    "amount_inr": 724379.0,
+    "income_inr": 1797739.0,
+    "fraud": true
+   },
+   {
+    "amount_inr": 670319.0,
+    "income_inr": 3495947.0,
+    "fraud": true
+   },
+   {
+    "amount_inr": 768577.0,
+    "income_inr": 4107572.0,
+    "fraud": true
+   },
+   {
+    "amount_inr": 690099.0,
+    "income_inr": 3830263.0,
+    "fraud": true
+   },
+   {
+    "amount_inr": 684050.0,
+    "income_inr": 1933758.0,
+    "fraud": true
+   },
+   {
+    "amount_inr": 636385.0,
+    "income_inr": 2481119.0,
+    "fraud": true
+   },
+   {
+    "amount_inr": 657196.0,
+    "income_inr": 3689152.0,
+    "fraud": true
+   },
+   {
+    "amount_inr": 670122.0,
+    "income_inr": 4306900.0,
+    "fraud": true
+   },
+   {
+    "amount_inr": 680314.0,
+    "income_inr": 4270400.0,
+    "fraud": true
+   },
+   {
+    "amount_inr": 808960.0,
+    "income_inr": 2257036.0,
+    "fraud": true
+   },
+   {
+    "amount_inr": 779334.0,
+    "income_inr": 3966915.0,
+    "fraud": true
+   },
+   {
+    "amount_inr": 628308.0,
+    "income_inr": 2606473.0,
+    "fraud": true
+   },
+   {
+    "amount_inr": 804147.0,
+    "income_inr": 2547297.0,
+    "fraud": true
+   },
+   {
+    "amount_inr": 746212.0,
+    "income_inr": 3972298.0,
+    "fraud": true
+   },
+   {
+    "amount_inr": 715077.0,
+    "income_inr": 4166230.0,
+    "fraud": true
+   },
+   {
+    "amount_inr": 786583.0,
+    "income_inr": 2190080.0,
+    "fraud": true
+   },
+   {
+    "amount_inr": 627351.0,
+    "income_inr": 1885614.0,
+    "fraud": true
+   },
+   {
+    "amount_inr": 668913.0,
+    "income_inr": 4371610.0,
+    "fraud": true
+   },
+   {
+    "amount_inr": 685013.0,
+    "income_inr": 1992187.0,
+    "fraud": true
+   },
+   {
+    "amount_inr": 681428.0,
+    "income_inr": 2564247.0,
+    "fraud": true
+   },
+   {
+    "amount_inr": 633644.0,
+    "income_inr": 4002945.0,
+    "fraud": true
+   },
+   {
+    "amount_inr": 669842.0,
+    "income_inr": 4200736.0,
+    "fraud": true
+   },
+   {
+    "amount_inr": 697289.0,
+    "income_inr": 1757171.0,
+    "fraud": true
+   },
+   {
+    "amount_inr": 684179.0,
+    "income_inr": 1751191.0,
+    "fraud": true
+   },
+   {
+    "amount_inr": 754622.0,
+    "income_inr": 1903515.0,
+    "fraud": true
+   },
+   {
+    "amount_inr": 755741.0,
+    "income_inr": 2786168.0,
+    "fraud": true
+   },
+   {
+    "amount_inr": 646881.0,
+    "income_inr": 2775631.0,
+    "fraud": true
+   },
+   {
+    "amount_inr": 755406.0,
+    "income_inr": 2140911.0,
+    "fraud": true
+   },
+   {
+    "amount_inr": 735165.0,
+    "income_inr": 3920356.0,
+    "fraud": true
+   },
+   {
+    "amount_inr": 632211.0,
+    "income_inr": 2522053.0,
+    "fraud": true
+   },
+   {
+    "amount_inr": 736487.0,
+    "income_inr": 1915900.0,
+    "fraud": true
+   },
+   {
+    "amount_inr": 686243.0,
+    "income_inr": 2722757.0,
+    "fraud": true
+   },
+   {
+    "amount_inr": 723655.0,
+    "income_inr": 4139823.0,
+    "fraud": true
+   },
+   {
+    "amount_inr": 657468.0,
+    "income_inr": 2819420.0,
+    "fraud": true
+   },
+   {
+    "amount_inr": 590205.0,
+    "income_inr": 2642282.0,
+    "fraud": false
+   },
+   {
+    "amount_inr": 799692.0,
+    "income_inr": 11613763.0,
+    "fraud": false
+   },
+   {
+    "amount_inr": 380069.0,
+    "income_inr": 3896579.0,
+    "fraud": false
+   },
+   {
+    "amount_inr": 199723.0,
+    "income_inr": 7159913.0,
+    "fraud": false
+   },
+   {
+    "amount_inr": 377888.0,
+    "income_inr": 11765543.0,
+    "fraud": false
+   },
+   {
+    "amount_inr": 413287.0,
+    "income_inr": 10398963.0,
+    "fraud": false
+   },
+   {
+    "amount_inr": 249312.0,
+    "income_inr": 10371532.0,
+    "fraud": false
+   },
+   {
+    "amount_inr": 827685.0,
+    "income_inr": 6455010.0,
+    "fraud": false
+   },
+   {
+    "amount_inr": 45463.0,
+    "income_inr": 3777368.0,
+    "fraud": false
+   },
+   {
+    "amount_inr": 349670.0,
+    "income_inr": 10917361.0,
+    "fraud": false
+   },
+   {
+    "amount_inr": 702534.0,
+    "income_inr": 8838294.0,
+    "fraud": false
+   },
+   {
+    "amount_inr": 770044.0,
+    "income_inr": 6439043.0,
+    "fraud": false
+   },
+   {
+    "amount_inr": 311979.0,
+    "income_inr": 11466896.0,
+    "fraud": false
+   },
+   {
+    "amount_inr": 250262.0,
+    "income_inr": 5955360.0,
+    "fraud": false
+   },
+   {
+    "amount_inr": 352816.0,
+    "income_inr": 12043126.0,
+    "fraud": false
+   },
+   {
+    "amount_inr": 103912.0,
+    "income_inr": 2134454.0,
+    "fraud": false
+   },
+   {
+    "amount_inr": 283492.0,
+    "income_inr": 4686198.0,
+    "fraud": false
+   },
+   {
+    "amount_inr": 478309.0,
+    "income_inr": 9843738.0,
+    "fraud": false
+   },
+   {
+    "amount_inr": 126690.0,
+    "income_inr": 2807931.0,
+    "fraud": false
+   },
+   {
+    "amount_inr": 333669.0,
+    "income_inr": 1872382.0,
+    "fraud": false
+   },
+   {
+    "amount_inr": 689124.0,
+    "income_inr": 6357851.0,
+    "fraud": false
+   },
+   {
+    "amount_inr": 762684.0,
+    "income_inr": 11273840.0,
+    "fraud": false
+   },
+   {
+    "amount_inr": 510178.0,
+    "income_inr": 4349897.0,
+    "fraud": false
+   },
+   {
+    "amount_inr": 57211.0,
+    "income_inr": 10794283.0,
+    "fraud": false
+   },
+   {
+    "amount_inr": 175289.0,
+    "income_inr": 7853045.0,
+    "fraud": false
+   },
+   {
+    "amount_inr": 780344.0,
+    "income_inr": 10239568.0,
+    "fraud": false
+   },
+   {
+    "amount_inr": 177440.0,
+    "income_inr": 7661791.0,
+    "fraud": false
+   },
+   {
+    "amount_inr": 577431.0,
+    "income_inr": 2097094.0,
+    "fraud": false
+   },
+   {
+    "amount_inr": 362645.0,
+    "income_inr": 6902004.0,
+    "fraud": false
+   },
+   {
+    "amount_inr": 440079.0,
+    "income_inr": 7883250.0,
+    "fraud": false
+   },
+   {
+    "amount_inr": 88895.0,
+    "income_inr": 5899939.0,
+    "fraud": false
+   },
+   {
+    "amount_inr": 105440.0,
+    "income_inr": 10883509.0,
+    "fraud": false
+   },
+   {
+    "amount_inr": 514355.0,
+    "income_inr": 4265852.0,
+    "fraud": false
+   },
+   {
+    "amount_inr": 530864.0,
+    "income_inr": 2045725.0,
+    "fraud": false
+   },
+   {
+    "amount_inr": 671540.0,
+    "income_inr": 9775752.0,
+    "fraud": false
+   },
+   {
+    "amount_inr": 110866.0,
+    "income_inr": 10928463.0,
+    "fraud": false
+   },
+   {
+    "amount_inr": 131487.0,
+    "income_inr": 12059593.0,
+    "fraud": false
+   },
+   {
+    "amount_inr": 57892.0,
+    "income_inr": 10380015.0,
+    "fraud": false
+   },
+   {
+    "amount_inr": 221364.0,
+    "income_inr": 5011385.0,
+    "fraud": false
+   },
+   {
+    "amount_inr": 251379.0,
+    "income_inr": 11806011.0,
+    "fraud": false
+   },
+   {
+    "amount_inr": 590362.0,
+    "income_inr": 9348969.0,
+    "fraud": false
+   },
+   {
+    "amount_inr": 729319.0,
+    "income_inr": 8127856.0,
+    "fraud": false
+   },
+   {
+    "amount_inr": 372340.0,
+    "income_inr": 6127800.0,
+    "fraud": false
+   },
+   {
+    "amount_inr": 181274.0,
+    "income_inr": 10182677.0,
+    "fraud": false
+   },
+   {
+    "amount_inr": 38433.0,
+    "income_inr": 3433797.0,
+    "fraud": false
+   },
+   {
+    "amount_inr": 390398.0,
+    "income_inr": 5637416.0,
+    "fraud": false
+   },
+   {
+    "amount_inr": 148420.0,
+    "income_inr": 7449678.0,
+    "fraud": false
+   },
+   {
+    "amount_inr": 197841.0,
+    "income_inr": 8596172.0,
+    "fraud": false
+   },
+   {
+    "amount_inr": 284888.0,
+    "income_inr": 12079398.0,
+    "fraud": false
+   },
+   {
+    "amount_inr": 159870.0,
+    "income_inr": 3913351.0,
+    "fraud": false
+   },
+   {
+    "amount_inr": 242108.0,
+    "income_inr": 10816261.0,
+    "fraud": false
+   },
+   {
+    "amount_inr": 599140.0,
+    "income_inr": 10985048.0,
+    "fraud": false
+   },
+   {
+    "amount_inr": 179120.0,
+    "income_inr": 9843176.0,
+    "fraud": false
+   },
+   {
+    "amount_inr": 419646.0,
+    "income_inr": 12379882.0,
+    "fraud": false
+   },
+   {
+    "amount_inr": 776988.0,
+    "income_inr": 9411983.0,
+    "fraud": false
+   },
+   {
+    "amount_inr": 786654.0,
+    "income_inr": 10880796.0,
+    "fraud": false
+   },
+   {
+    "amount_inr": 192866.0,
+    "income_inr": 6439292.0,
+    "fraud": false
+   },
+   {
+    "amount_inr": 625543.0,
+    "income_inr": 9381707.0,
+    "fraud": false
+   },
+   {
+    "amount_inr": 482521.0,
+    "income_inr": 10168474.0,
+    "fraud": false
+   },
+   {
+    "amount_inr": 269261.0,
+    "income_inr": 7761274.0,
+    "fraud": false
+   },
+   {
+    "amount_inr": 299866.0,
+    "income_inr": 12164351.0,
+    "fraud": false
+   },
+   {
+    "amount_inr": 237264.0,
+    "income_inr": 12401268.0,
+    "fraud": false
+   },
+   {
+    "amount_inr": 266212.0,
+    "income_inr": 3913911.0,
+    "fraud": false
+   },
+   {
+    "amount_inr": 498733.0,
+    "income_inr": 2706105.0,
+    "fraud": false
+   },
+   {
+    "amount_inr": 574357.0,
+    "income_inr": 9198278.0,
+    "fraud": false
+   },
+   {
+    "amount_inr": 273673.0,
+    "income_inr": 5353785.0,
+    "fraud": false
+   },
+   {
+    "amount_inr": 529343.0,
+    "income_inr": 6877969.0,
+    "fraud": false
+   },
+   {
+    "amount_inr": 231060.0,
+    "income_inr": 5578812.0,
+    "fraud": false
+   },
+   {
+    "amount_inr": 462290.0,
+    "income_inr": 3453304.0,
+    "fraud": false
+   },
+   {
+    "amount_inr": 17364.0,
+    "income_inr": 4803060.0,
+    "fraud": false
+   },
+   {
+    "amount_inr": 26728.0,
+    "income_inr": 3968345.0,
+    "fraud": false
+   },
+   {
+    "amount_inr": 516216.0,
+    "income_inr": 3066495.0,
+    "fraud": false
+   },
+   {
+    "amount_inr": 33896.0,
+    "income_inr": 6532185.0,
+    "fraud": false
+   },
+   {
+    "amount_inr": 405841.0,
+    "income_inr": 10058889.0,
+    "fraud": false
+   },
+   {
+    "amount_inr": 749287.0,
+    "income_inr": 11766863.0,
+    "fraud": false
+   },
+   {
+    "amount_inr": 542570.0,
+    "income_inr": 9770625.0,
+    "fraud": false
+   },
+   {
+    "amount_inr": 230771.0,
+    "income_inr": 8030697.0,
+    "fraud": false
+   },
+   {
+    "amount_inr": 70857.0,
+    "income_inr": 7655109.0,
+    "fraud": false
+   },
+   {
+    "amount_inr": 107223.0,
+    "income_inr": 5090565.0,
+    "fraud": false
+   },
+   {
+    "amount_inr": 136877.0,
+    "income_inr": 8017594.0,
+    "fraud": false
+   },
+   {
+    "amount_inr": 318035.0,
+    "income_inr": 12323348.0,
+    "fraud": false
+   },
+   {
+    "amount_inr": 561060.0,
+    "income_inr": 11993189.0,
+    "fraud": false
+   },
+   {
+    "amount_inr": 719487.0,
+    "income_inr": 4554698.0,
+    "fraud": false
+   },
+   {
+    "amount_inr": 77788.0,
+    "income_inr": 8413012.0,
+    "fraud": false
+   },
+   {
+    "amount_inr": 671470.0,
+    "income_inr": 4392518.0,
+    "fraud": false
+   },
+   {
+    "amount_inr": 533465.0,
+    "income_inr": 11325812.0,
+    "fraud": false
+   },
+   {
+    "amount_inr": 64762.0,
+    "income_inr": 2730309.0,
+    "fraud": false
+   },
+   {
+    "amount_inr": 563791.0,
+    "income_inr": 2554784.0,
+    "fraud": false
+   },
+   {
+    "amount_inr": 34254.0,
+    "income_inr": 2044255.0,
+    "fraud": false
+   },
+   {
+    "amount_inr": 668677.0,
+    "income_inr": 11064044.0,
+    "fraud": false
+   },
+   {
+    "amount_inr": 776018.0,
+    "income_inr": 5448840.0,
+    "fraud": false
+   },
+   {
+    "amount_inr": 507149.0,
+    "income_inr": 6648880.0,
+    "fraud": false
+   },
+   {
+    "amount_inr": 228568.0,
+    "income_inr": 8014619.0,
+    "fraud": false
+   },
+   {
+    "amount_inr": 658037.0,
+    "income_inr": 7469165.0,
+    "fraud": false
+   },
+   {
+    "amount_inr": 429087.0,
+    "income_inr": 10728377.0,
+    "fraud": false
+   },
+   {
+    "amount_inr": 548447.0,
+    "income_inr": 1967731.0,
+    "fraud": false
+   },
+   {
+    "amount_inr": 755252.0,
+    "income_inr": 4725484.0,
+    "fraud": false
+   },
+   {
+    "amount_inr": 15740.0,
+    "income_inr": 7314367.0,
+    "fraud": false
+   },
+   {
+    "amount_inr": 135602.0,
+    "income_inr": 6132680.0,
+    "fraud": false
+   },
+   {
+    "amount_inr": 788966.0,
+    "income_inr": 5160689.0,
+    "fraud": false
+   },
+   {
+    "amount_inr": 625542.0,
+    "income_inr": 12334906.0,
+    "fraud": false
+   },
+   {
+    "amount_inr": 557265.0,
+    "income_inr": 4377081.0,
+    "fraud": false
+   },
+   {
+    "amount_inr": 325075.0,
+    "income_inr": 6134999.0,
+    "fraud": false
+   },
+   {
+    "amount_inr": 524088.0,
+    "income_inr": 6064883.0,
+    "fraud": false
+   },
+   {
+    "amount_inr": 300905.0,
+    "income_inr": 10306589.0,
+    "fraud": false
+   },
+   {
+    "amount_inr": 613402.0,
+    "income_inr": 10336339.0,
+    "fraud": false
+   },
+   {
+    "amount_inr": 342572.0,
+    "income_inr": 2287263.0,
+    "fraud": false
+   },
+   {
+    "amount_inr": 426892.0,
+    "income_inr": 4097260.0,
+    "fraud": false
+   },
+   {
+    "amount_inr": 400118.0,
+    "income_inr": 9084748.0,
+    "fraud": false
+   },
+   {
+    "amount_inr": 641343.0,
+    "income_inr": 11370024.0,
+    "fraud": false
+   },
+   {
+    "amount_inr": 622174.0,
+    "income_inr": 10633396.0,
+    "fraud": false
+   },
+   {
+    "amount_inr": 57822.0,
+    "income_inr": 2028755.0,
+    "fraud": false
+   },
+   {
+    "amount_inr": 210313.0,
+    "income_inr": 6318226.0,
+    "fraud": false
+   },
+   {
+    "amount_inr": 718712.0,
+    "income_inr": 7991793.0,
+    "fraud": false
+   },
+   {
+    "amount_inr": 326831.0,
+    "income_inr": 5168184.0,
+    "fraud": false
+   },
+   {
+    "amount_inr": 684176.0,
+    "income_inr": 5837139.0,
+    "fraud": false
+   },
+   {
+    "amount_inr": 381179.0,
+    "income_inr": 3780047.0,
+    "fraud": false
+   },
+   {
+    "amount_inr": 464642.0,
+    "income_inr": 4506468.0,
+    "fraud": false
+   },
+   {
+    "amount_inr": 680764.0,
+    "income_inr": 9837289.0,
+    "fraud": false
+   },
+   {
+    "amount_inr": 587977.0,
+    "income_inr": 8640555.0,
+    "fraud": false
+   },
+   {
+    "amount_inr": 119521.0,
+    "income_inr": 10163803.0,
+    "fraud": false
+   },
+   {
+    "amount_inr": 216414.0,
+    "income_inr": 4032538.0,
+    "fraud": false
+   },
+   {
+    "amount_inr": 370012.0,
+    "income_inr": 3437480.0,
+    "fraud": false
+   },
+   {
+    "amount_inr": 337607.0,
+    "income_inr": 5539471.0,
+    "fraud": false
+   },
+   {
+    "amount_inr": 285383.0,
+    "income_inr": 11684734.0,
+    "fraud": false
+   },
+   {
+    "amount_inr": 704330.0,
+    "income_inr": 8009198.0,
+    "fraud": false
+   },
+   {
+    "amount_inr": 66286.0,
+    "income_inr": 4068926.0,
+    "fraud": false
+   },
+   {
+    "amount_inr": 518008.0,
+    "income_inr": 9343257.0,
+    "fraud": false
+   },
+   {
+    "amount_inr": 760229.0,
+    "income_inr": 9597585.0,
+    "fraud": false
+   },
+   {
+    "amount_inr": 696097.0,
+    "income_inr": 10016611.0,
+    "fraud": false
+   },
+   {
+    "amount_inr": 697855.0,
+    "income_inr": 10627863.0,
+    "fraud": false
+   },
+   {
+    "amount_inr": 407646.0,
+    "income_inr": 12085061.0,
+    "fraud": false
+   },
+   {
+    "amount_inr": 449878.0,
+    "income_inr": 4260349.0,
+    "fraud": false
+   },
+   {
+    "amount_inr": 207170.0,
+    "income_inr": 3086562.0,
+    "fraud": false
+   },
+   {
+    "amount_inr": 775665.0,
+    "income_inr": 10916624.0,
+    "fraud": false
+   },
+   {
+    "amount_inr": 807822.0,
+    "income_inr": 7290894.0,
+    "fraud": false
+   },
+   {
+    "amount_inr": 115704.0,
+    "income_inr": 4777630.0,
+    "fraud": false
+   },
+   {
+    "amount_inr": 641932.0,
+    "income_inr": 11751001.0,
+    "fraud": false
+   },
+   {
+    "amount_inr": 676995.0,
+    "income_inr": 12160231.0,
+    "fraud": false
+   },
+   {
+    "amount_inr": 267434.0,
+    "income_inr": 11048438.0,
+    "fraud": false
+   },
+   {
+    "amount_inr": 335226.0,
+    "income_inr": 4397093.0,
+    "fraud": false
+   },
+   {
+    "amount_inr": 192602.0,
+    "income_inr": 8390179.0,
+    "fraud": false
+   },
+   {
+    "amount_inr": 35972.0,
+    "income_inr": 11124502.0,
+    "fraud": false
+   },
+   {
+    "amount_inr": 695338.0,
+    "income_inr": 6450166.0,
+    "fraud": false
+   },
+   {
+    "amount_inr": 27422.0,
+    "income_inr": 2509157.0,
+    "fraud": false
+   },
+   {
+    "amount_inr": 789352.0,
+    "income_inr": 9528784.0,
+    "fraud": false
+   },
+   {
+    "amount_inr": 706455.0,
+    "income_inr": 4440536.0,
+    "fraud": false
+   },
+   {
+    "amount_inr": 561199.0,
+    "income_inr": 8432018.0,
+    "fraud": false
+   },
+   {
+    "amount_inr": 417870.0,
+    "income_inr": 6495763.0,
+    "fraud": false
+   },
+   {
+    "amount_inr": 795144.0,
+    "income_inr": 11402302.0,
+    "fraud": false
+   },
+   {
+    "amount_inr": 360364.0,
+    "income_inr": 11936949.0,
+    "fraud": false
+   },
+   {
+    "amount_inr": 711426.0,
+    "income_inr": 8379379.0,
+    "fraud": false
+   },
+   {
+    "amount_inr": 817183.0,
+    "income_inr": 9982577.0,
+    "fraud": false
+   },
+   {
+    "amount_inr": 421144.0,
+    "income_inr": 3505207.0,
+    "fraud": false
+   },
+   {
+    "amount_inr": 505502.0,
+    "income_inr": 9163443.0,
+    "fraud": false
+   },
+   {
+    "amount_inr": 323743.0,
+    "income_inr": 9669527.0,
+    "fraud": false
+   },
+   {
+    "amount_inr": 484959.0,
+    "income_inr": 10188497.0,
+    "fraud": false
+   },
+   {
+    "amount_inr": 181870.0,
+    "income_inr": 3110511.0,
+    "fraud": false
+   },
+   {
+    "amount_inr": 619241.0,
+    "income_inr": 1902821.0,
+    "fraud": false
+   },
+   {
+    "amount_inr": 606901.0,
+    "income_inr": 8018194.0,
+    "fraud": false
+   },
+   {
+    "amount_inr": 66585.0,
+    "income_inr": 7066301.0,
+    "fraud": false
+   },
+   {
+    "amount_inr": 220499.0,
+    "income_inr": 8576456.0,
+    "fraud": false
+   },
+   {
+    "amount_inr": 517074.0,
+    "income_inr": 10949440.0,
+    "fraud": false
+   },
+   {
+    "amount_inr": 347352.0,
+    "income_inr": 11834028.0,
+    "fraud": false
+   },
+   {
+    "amount_inr": 232959.0,
+    "income_inr": 5977676.0,
+    "fraud": false
+   },
+   {
+    "amount_inr": 177916.0,
+    "income_inr": 3587405.0,
+    "fraud": false
+   },
+   {
+    "amount_inr": 69558.0,
+    "income_inr": 4748360.0,
+    "fraud": false
+   },
+   {
+    "amount_inr": 251963.0,
+    "income_inr": 10512778.0,
+    "fraud": false
+   },
+   {
+    "amount_inr": 174525.0,
+    "income_inr": 4970078.0,
+    "fraud": false
+   },
+   {
+    "amount_inr": 393486.0,
+    "income_inr": 6046867.0,
+    "fraud": false
+   },
+   {
+    "amount_inr": 505953.0,
+    "income_inr": 5863235.0,
+    "fraud": false
+   },
+   {
+    "amount_inr": 386577.0,
+    "income_inr": 9181614.0,
+    "fraud": false
+   },
+   {
+    "amount_inr": 476579.0,
+    "income_inr": 11733710.0,
+    "fraud": false
+   },
+   {
+    "amount_inr": 26232.0,
+    "income_inr": 1788092.0,
+    "fraud": false
+   },
+   {
+    "amount_inr": 320293.0,
+    "income_inr": 2824915.0,
+    "fraud": false
+   },
+   {
+    "amount_inr": 29510.0,
+    "income_inr": 4034985.0,
+    "fraud": false
+   },
+   {
+    "amount_inr": 410624.0,
+    "income_inr": 6014524.0,
+    "fraud": false
+   },
+   {
+    "amount_inr": 527481.0,
+    "income_inr": 5339906.0,
+    "fraud": false
+   },
+   {
+    "amount_inr": 44509.0,
+    "income_inr": 10917769.0,
+    "fraud": false
+   },
+   {
+    "amount_inr": 147572.0,
+    "income_inr": 5118585.0,
+    "fraud": false
+   },
+   {
+    "amount_inr": 802913.0,
+    "income_inr": 11666893.0,
+    "fraud": false
+   },
+   {
+    "amount_inr": 550609.0,
+    "income_inr": 4385403.0,
+    "fraud": false
+   },
+   {
+    "amount_inr": 167597.0,
+    "income_inr": 2162597.0,
+    "fraud": false
+   },
+   {
+    "amount_inr": 108044.0,
+    "income_inr": 8955570.0,
+    "fraud": false
+   },
+   {
+    "amount_inr": 444914.0,
+    "income_inr": 7058867.0,
+    "fraud": false
+   },
+   {
+    "amount_inr": 381662.0,
+    "income_inr": 8753824.0,
+    "fraud": false
+   },
+   {
+    "amount_inr": 652298.0,
+    "income_inr": 4907334.0,
+    "fraud": false
+   },
+   {
+    "amount_inr": 120357.0,
+    "income_inr": 11806884.0,
+    "fraud": false
+   },
+   {
+    "amount_inr": 56093.0,
+    "income_inr": 10121379.0,
+    "fraud": false
+   },
+   {
+    "amount_inr": 424024.0,
+    "income_inr": 10138589.0,
+    "fraud": false
+   },
+   {
+    "amount_inr": 290281.0,
+    "income_inr": 3153104.0,
+    "fraud": false
+   },
+   {
+    "amount_inr": 87977.0,
+    "income_inr": 8582544.0,
+    "fraud": false
+   },
+   {
+    "amount_inr": 556999.0,
+    "income_inr": 7316743.0,
+    "fraud": false
+   },
+   {
+    "amount_inr": 310940.0,
+    "income_inr": 5287224.0,
+    "fraud": false
+   },
+   {
+    "amount_inr": 347070.0,
+    "income_inr": 5452056.0,
+    "fraud": false
+   },
+   {
+    "amount_inr": 732980.0,
+    "income_inr": 7069577.0,
+    "fraud": false
+   },
+   {
+    "amount_inr": 208369.0,
+    "income_inr": 7973463.0,
+    "fraud": false
+   },
+   {
+    "amount_inr": 399705.0,
+    "income_inr": 5249542.0,
+    "fraud": false
+   },
+   {
+    "amount_inr": 429559.0,
+    "income_inr": 4955743.0,
+    "fraud": false
+   },
+   {
+    "amount_inr": 614305.0,
+    "income_inr": 11083894.0,
+    "fraud": false
+   },
+   {
+    "amount_inr": 110735.0,
+    "income_inr": 8545020.0,
+    "fraud": false
+   },
+   {
+    "amount_inr": 129316.0,
+    "income_inr": 4730193.0,
+    "fraud": false
+   },
+   {
+    "amount_inr": 359660.0,
+    "income_inr": 6991617.0,
+    "fraud": false
+   },
+   {
+    "amount_inr": 436371.0,
+    "income_inr": 8458074.0,
+    "fraud": false
+   },
+   {
+    "amount_inr": 354916.0,
+    "income_inr": 7144683.0,
+    "fraud": false
+   },
+   {
+    "amount_inr": 569734.0,
+    "income_inr": 12388368.0,
+    "fraud": false
+   },
+   {
+    "amount_inr": 352422.0,
+    "income_inr": 11505714.0,
+    "fraud": false
+   },
+   {
+    "amount_inr": 771774.0,
+    "income_inr": 10693820.0,
+    "fraud": false
+   },
+   {
+    "amount_inr": 528829.0,
+    "income_inr": 12120251.0,
+    "fraud": false
+   },
+   {
+    "amount_inr": 62282.0,
+    "income_inr": 9831219.0,
+    "fraud": false
+   },
+   {
+    "amount_inr": 310971.0,
+    "income_inr": 4130771.0,
+    "fraud": false
+   },
+   {
+    "amount_inr": 172041.0,
+    "income_inr": 4839262.0,
+    "fraud": false
+   },
+   {
+    "amount_inr": 231802.0,
+    "income_inr": 2887497.0,
+    "fraud": false
+   },
+   {
+    "amount_inr": 43764.0,
+    "income_inr": 3367908.0,
+    "fraud": false
+   },
+   {
+    "amount_inr": 525102.0,
+    "income_inr": 6659989.0,
+    "fraud": false
+   },
+   {
+    "amount_inr": 491460.0,
+    "income_inr": 11905056.0,
+    "fraud": false
+   },
+   {
+    "amount_inr": 486506.0,
+    "income_inr": 3602196.0,
+    "fraud": false
+   },
+   {
+    "amount_inr": 315048.0,
+    "income_inr": 10259064.0,
+    "fraud": false
+   },
+   {
+    "amount_inr": 114723.0,
+    "income_inr": 4335191.0,
+    "fraud": false
+   },
+   {
+    "amount_inr": 99500.0,
+    "income_inr": 2813665.0,
+    "fraud": false
+   },
+   {
+    "amount_inr": 335752.0,
+    "income_inr": 7639615.0,
+    "fraud": false
+   },
+   {
+    "amount_inr": 745455.0,
+    "income_inr": 10406416.0,
+    "fraud": false
+   },
+   {
+    "amount_inr": 40289.0,
+    "income_inr": 2644532.0,
+    "fraud": false
+   },
+   {
+    "amount_inr": 361575.0,
+    "income_inr": 8183771.0,
+    "fraud": false
+   },
+   {
+    "amount_inr": 379888.0,
+    "income_inr": 5921945.0,
+    "fraud": false
+   },
+   {
+    "amount_inr": 147790.0,
+    "income_inr": 11995043.0,
+    "fraud": false
+   },
+   {
+    "amount_inr": 74123.0,
+    "income_inr": 3030937.0,
+    "fraud": false
+   },
+   {
+    "amount_inr": 554658.0,
+    "income_inr": 4854547.0,
+    "fraud": false
+   },
+   {
+    "amount_inr": 307094.0,
+    "income_inr": 7517655.0,
+    "fraud": false
+   },
+   {
+    "amount_inr": 385411.0,
+    "income_inr": 10818042.0,
+    "fraud": false
+   },
+   {
+    "amount_inr": 545932.0,
+    "income_inr": 12221856.0,
+    "fraud": false
+   },
+   {
+    "amount_inr": 259530.0,
+    "income_inr": 2971105.0,
+    "fraud": false
+   },
+   {
+    "amount_inr": 476158.0,
+    "income_inr": 10201796.0,
+    "fraud": false
+   },
+   {
+    "amount_inr": 159678.0,
+    "income_inr": 11567304.0,
+    "fraud": false
+   },
+   {
+    "amount_inr": 581136.0,
+    "income_inr": 6990722.0,
+    "fraud": false
+   },
+   {
+    "amount_inr": 55119.0,
+    "income_inr": 9754122.0,
+    "fraud": false
+   },
+   {
+    "amount_inr": 579049.0,
+    "income_inr": 4071504.0,
+    "fraud": false
+   },
+   {
+    "amount_inr": 289852.0,
+    "income_inr": 6103128.0,
+    "fraud": false
+   },
+   {
+    "amount_inr": 341173.0,
+    "income_inr": 4114166.0,
+    "fraud": false
+   },
+   {
+    "amount_inr": 246132.0,
+    "income_inr": 6204655.0,
+    "fraud": false
+   },
+   {
+    "amount_inr": 289922.0,
+    "income_inr": 8956562.0,
+    "fraud": false
+   },
+   {
+    "amount_inr": 552034.0,
+    "income_inr": 9304480.0,
+    "fraud": false
+   },
+   {
+    "amount_inr": 118766.0,
+    "income_inr": 11761019.0,
+    "fraud": false
+   },
+   {
+    "amount_inr": 531238.0,
+    "income_inr": 5633908.0,
+    "fraud": false
+   },
+   {
+    "amount_inr": 64552.0,
+    "income_inr": 1944287.0,
+    "fraud": false
+   },
+   {
+    "amount_inr": 151365.0,
+    "income_inr": 4583111.0,
+    "fraud": false
+   },
+   {
+    "amount_inr": 580809.0,
+    "income_inr": 4910286.0,
+    "fraud": false
+   },
+   {
+    "amount_inr": 96363.0,
+    "income_inr": 3920712.0,
+    "fraud": false
+   },
+   {
+    "amount_inr": 252540.0,
+    "income_inr": 7165197.0,
+    "fraud": false
+   },
+   {
+    "amount_inr": 590923.0,
+    "income_inr": 10081830.0,
+    "fraud": false
+   },
+   {
+    "amount_inr": 685940.0,
+    "income_inr": 4688058.0,
+    "fraud": false
+   },
+   {
+    "amount_inr": 327677.0,
+    "income_inr": 5872162.0,
+    "fraud": false
+   },
+   {
+    "amount_inr": 323696.0,
+    "income_inr": 11827427.0,
+    "fraud": false
+   },
+   {
+    "amount_inr": 369359.0,
+    "income_inr": 11725411.0,
+    "fraud": false
+   },
+   {
+    "amount_inr": 455713.0,
+    "income_inr": 12215527.0,
+    "fraud": false
+   },
+   {
+    "amount_inr": 145409.0,
+    "income_inr": 9951767.0,
+    "fraud": false
+   },
+   {
+    "amount_inr": 165184.0,
+    "income_inr": 5589209.0,
+    "fraud": false
+   },
+   {
+    "amount_inr": 682150.0,
+    "income_inr": 11559025.0,
+    "fraud": false
+   },
+   {
+    "amount_inr": 521759.0,
+    "income_inr": 5762802.0,
+    "fraud": false
+   },
+   {
+    "amount_inr": 83244.0,
+    "income_inr": 11853853.0,
+    "fraud": false
+   },
+   {
+    "amount_inr": 289410.0,
+    "income_inr": 6400083.0,
+    "fraud": false
+   },
+   {
+    "amount_inr": 230362.0,
+    "income_inr": 4377498.0,
+    "fraud": false
+   },
+   {
+    "amount_inr": 17629.0,
+    "income_inr": 11435136.0,
+    "fraud": false
+   },
+   {
+    "amount_inr": 386118.0,
+    "income_inr": 9653015.0,
+    "fraud": false
+   },
+   {
+    "amount_inr": 51320.0,
+    "income_inr": 1811920.0,
+    "fraud": false
+   },
+   {
+    "amount_inr": 174678.0,
+    "income_inr": 4682648.0,
+    "fraud": false
+   },
+   {
+    "amount_inr": 357710.0,
+    "income_inr": 9013666.0,
+    "fraud": false
+   },
+   {
+    "amount_inr": 400539.0,
+    "income_inr": 11430007.0,
+    "fraud": false
+   },
+   {
+    "amount_inr": 743354.0,
+    "income_inr": 8002312.0,
+    "fraud": false
+   },
+   {
+    "amount_inr": 471242.0,
+    "income_inr": 9387017.0,
+    "fraud": false
+   },
+   {
+    "amount_inr": 602236.0,
+    "income_inr": 7430503.0,
+    "fraud": false
+   },
+   {
+    "amount_inr": 670584.0,
+    "income_inr": 7634728.0,
+    "fraud": false
+   },
+   {
+    "amount_inr": 746133.0,
+    "income_inr": 8560786.0,
+    "fraud": false
+   },
+   {
+    "amount_inr": 540611.0,
+    "income_inr": 2241563.0,
+    "fraud": false
+   },
+   {
+    "amount_inr": 141958.0,
+    "income_inr": 6353437.0,
+    "fraud": false
+   },
+   {
+    "amount_inr": 240427.0,
+    "income_inr": 7190856.0,
+    "fraud": false
+   },
+   {
+    "amount_inr": 299405.0,
+    "income_inr": 3165494.0,
+    "fraud": false
+   },
+   {
+    "amount_inr": 9511.0,
+    "income_inr": 2616350.0,
+    "fraud": false
+   },
+   {
+    "amount_inr": 73189.0,
+    "income_inr": 1866876.0,
+    "fraud": false
+   },
+   {
+    "amount_inr": 264433.0,
+    "income_inr": 3555967.0,
+    "fraud": false
+   },
+   {
+    "amount_inr": 525607.0,
+    "income_inr": 6885233.0,
+    "fraud": false
+   },
+   {
+    "amount_inr": 689725.0,
+    "income_inr": 10942074.0,
+    "fraud": false
+   },
+   {
+    "amount_inr": 80926.0,
+    "income_inr": 3444676.0,
+    "fraud": false
+   },
+   {
+    "amount_inr": 299531.0,
+    "income_inr": 2791036.0,
+    "fraud": false
+   },
+   {
+    "amount_inr": 728371.0,
+    "income_inr": 12140300.0,
+    "fraud": false
+   },
+   {
+    "amount_inr": 560131.0,
+    "income_inr": 6971012.0,
+    "fraud": false
+   },
+   {
+    "amount_inr": 340505.0,
+    "income_inr": 6625629.0,
+    "fraud": false
+   },
+   {
+    "amount_inr": 277023.0,
+    "income_inr": 7088107.0,
+    "fraud": false
+   },
+   {
+    "amount_inr": 428415.0,
+    "income_inr": 2507308.0,
+    "fraud": false
+   },
+   {
+    "amount_inr": 747481.0,
+    "income_inr": 6999199.0,
+    "fraud": false
+   },
+   {
+    "amount_inr": 94521.0,
+    "income_inr": 6591288.0,
+    "fraud": false
+   },
+   {
+    "amount_inr": 469501.0,
+    "income_inr": 12438182.0,
+    "fraud": false
+   },
+   {
+    "amount_inr": 252444.0,
+    "income_inr": 6672848.0,
+    "fraud": false
+   },
+   {
+    "amount_inr": 406903.0,
+    "income_inr": 4525221.0,
+    "fraud": false
+   },
+   {
+    "amount_inr": 667080.0,
+    "income_inr": 10407782.0,
+    "fraud": false
+   },
+   {
+    "amount_inr": 142266.0,
+    "income_inr": 9148175.0,
+    "fraud": false
+   },
+   {
+    "amount_inr": 718842.0,
+    "income_inr": 7093521.0,
+    "fraud": false
+   },
+   {
+    "amount_inr": 333835.0,
+    "income_inr": 6397125.0,
+    "fraud": false
+   },
+   {
+    "amount_inr": 439291.0,
+    "income_inr": 2727871.0,
+    "fraud": false
+   },
+   {
+    "amount_inr": 800433.0,
+    "income_inr": 12397770.0,
+    "fraud": false
+   }
+  ]
+ },
+ "bill": {
+  "fair_price": {
+   "dataset": {
+    "name": "Synthetic Indian hospital tariffs (generate_pricing_dataset.py)",
+    "rows": 6000,
+    "train": 4800,
+    "test": 1200,
+    "features": [
+     "category",
+     "city_tier",
+     "hospital_type",
+     "quantity"
+    ],
+    "split": "80/20 random split, random_state=42 (train_fair_price_model.py)"
+   },
+   "metrics": {
+    "r2": 0.957,
+    "mae_inr": 1712.0,
+    "mape_pct": 15.7,
+    "noise_floor_pct": 14.4
+   },
+   "by_category": [
+    {
+     "category": "consultation",
+     "n": 123,
+     "mape_pct": 13.6,
+     "mae_inr": 97.0
+    },
+    {
+     "category": "diagnostic",
+     "n": 240,
+     "mape_pct": 16.2,
+     "mae_inr": 1334.0
+    },
+    {
+     "category": "medicine",
+     "n": 334,
+     "mape_pct": 15.9,
+     "mae_inr": 105.0
+    },
+    {
+     "category": "nursing",
+     "n": 117,
+     "mape_pct": 18.7,
+     "mae_inr": 772.0
+    },
+    {
+     "category": "procedure",
+     "n": 233,
+     "mape_pct": 13.6,
+     "mae_inr": 5351.0
+    },
+    {
+     "category": "room_rent",
+     "n": 153,
+     "mape_pct": 16.8,
+     "mae_inr": 2288.0
+    }
+   ],
+   "importance": [
+    {
+     "feature": "category_procedure",
+     "importance": 0.6395
+    },
+    {
+     "feature": "hospital_type_government",
+     "importance": 0.0996
+    },
+    {
+     "feature": "hospital_type_premium",
+     "importance": 0.0555
+    },
+    {
+     "feature": "city_tier_metro",
+     "importance": 0.0552
+    },
+    {
+     "feature": "quantity",
+     "importance": 0.0504
+    },
+    {
+     "feature": "category_room_rent",
+     "importance": 0.0438
+    },
+    {
+     "feature": "category_diagnostic",
+     "importance": 0.0272
+    },
+    {
+     "feature": "hospital_type_private",
+     "importance": 0.0078
+    }
+   ]
+  },
+  "anomaly": {
+   "dataset": {
+    "name": "Fresh synthetic line items (seed 2026), 6% overcharged 2x-6x",
+    "rows": 3000,
+    "overcharged": 180,
+    "note": "Member 3's script scored the rows it trained on; this batch is new, so the model has not seen it."
+   },
+   "isolation_forest": {
+    "precision": 0.7293,
+    "recall": 0.7333,
+    "f1": 0.7313,
+    "accuracy": 0.9677,
+    "false_positive_rate": 0.0174,
+    "confusion": {
+     "tn": 2771,
+     "fp": 49,
+     "fn": 48,
+     "tp": 132
+    },
+    "roc_auc": 0.9794,
+    "pr_auc": 0.8122,
+    "roc": [
+     {
+      "fpr": 0.0,
+      "tpr": 0.0
+     },
+     {
+      "fpr": 0.0007,
+      "tpr": 0.2333
+     },
+     {
+      "fpr": 0.0021,
+      "tpr": 0.35
+     },
+     {
+      "fpr": 0.0039,
+      "tpr": 0.4
+     },
+     {
+      "fpr": 0.0053,
+      "tpr": 0.45
+     },
+     {
+      "fpr": 0.0078,
+      "tpr": 0.5
+     },
+     {
+      "fpr": 0.0096,
+      "tpr": 0.6222
+     },
+     {
+      "fpr": 0.0124,
+      "tpr": 0.6722
+     },
+     {
+      "fpr": 0.0156,
+      "tpr": 0.6889
+     },
+     {
+      "fpr": 0.0174,
+      "tpr": 0.7278
+     },
+     {
+      "fpr": 0.0184,
+      "tpr": 0.7611
+     },
+     {
+      "fpr": 0.0202,
+      "tpr": 0.8
+     },
+     {
+      "fpr": 0.0234,
+      "tpr": 0.8167
+     },
+     {
+      "fpr": 0.0273,
+      "tpr": 0.8556
+     },
+     {
+      "fpr": 0.0291,
+      "tpr": 0.8778
+     },
+     {
+      "fpr": 0.0323,
+      "tpr": 0.9111
+     },
+     {
+      "fpr": 0.0397,
+      "tpr": 0.9278
+     },
+     {
+      "fpr": 0.0489,
+      "tpr": 0.9389
+     },
+     {
+      "fpr": 0.084,
+      "tpr": 0.95
+     },
+     {
+      "fpr": 0.1291,
+      "tpr": 0.9611
+     },
+     {
+      "fpr": 0.1447,
+      "tpr": 0.9667
+     },
+     {
+      "fpr": 0.1897,
+      "tpr": 0.9667
+     },
+     {
+      "fpr": 0.2174,
+      "tpr": 0.9722
+     },
+     {
+      "fpr": 0.2585,
+      "tpr": 0.9778
+     },
+     {
+      "fpr": 0.2954,
+      "tpr": 0.9833
+     },
+     {
+      "fpr": 0.3103,
+      "tpr": 0.9889
+     },
+     {
+      "fpr": 0.3252,
+      "tpr": 0.9889
+     },
+     {
+      "fpr": 0.3348,
+      "tpr": 1.0
+     },
+     {
+      "fpr": 0.3883,
+      "tpr": 1.0
+     },
+     {
+      "fpr": 0.395,
+      "tpr": 1.0
+     },
+     {
+      "fpr": 0.4351,
+      "tpr": 1.0
+     },
+     {
+      "fpr": 0.4539,
+      "tpr": 1.0
+     },
+     {
+      "fpr": 0.4628,
+      "tpr": 1.0
+     },
+     {
+      "fpr": 0.4879,
+      "tpr": 1.0
+     },
+     {
+      "fpr": 0.5089,
+      "tpr": 1.0
+     },
+     {
+      "fpr": 0.5348,
+      "tpr": 1.0
+     },
+     {
+      "fpr": 0.5631,
+      "tpr": 1.0
+     },
+     {
+      "fpr": 0.5979,
+      "tpr": 1.0
+     },
+     {
+      "fpr": 0.6259,
+      "tpr": 1.0
+     },
+     {
+      "fpr": 0.634,
+      "tpr": 1.0
+     },
+     {
+      "fpr": 0.6684,
+      "tpr": 1.0
+     },
+     {
+      "fpr": 0.6773,
+      "tpr": 1.0
+     },
+     {
+      "fpr": 0.6876,
+      "tpr": 1.0
+     },
+     {
+      "fpr": 0.7067,
+      "tpr": 1.0
+     },
+     {
+      "fpr": 0.7348,
+      "tpr": 1.0
+     },
+     {
+      "fpr": 0.7539,
+      "tpr": 1.0
+     },
+     {
+      "fpr": 0.7663,
+      "tpr": 1.0
+     },
+     {
+      "fpr": 0.7777,
+      "tpr": 1.0
+     },
+     {
+      "fpr": 0.7904,
+      "tpr": 1.0
+     },
+     {
+      "fpr": 0.8149,
+      "tpr": 1.0
+     },
+     {
+      "fpr": 0.8245,
+      "tpr": 1.0
+     },
+     {
+      "fpr": 0.844,
+      "tpr": 1.0
+     },
+     {
+      "fpr": 0.861,
+      "tpr": 1.0
+     },
+     {
+      "fpr": 0.8862,
+      "tpr": 1.0
+     },
+     {
+      "fpr": 0.8936,
+      "tpr": 1.0
+     },
+     {
+      "fpr": 0.9184,
+      "tpr": 1.0
+     },
+     {
+      "fpr": 0.95,
+      "tpr": 1.0
+     },
+     {
+      "fpr": 0.9702,
+      "tpr": 1.0
+     },
+     {
+      "fpr": 0.9812,
+      "tpr": 1.0
+     },
+     {
+      "fpr": 1.0,
+      "tpr": 1.0
+     }
+    ]
+   },
+   "app_flagged": {
+    "precision": 0.4826,
+    "recall": 1.0,
+    "f1": 0.651,
+    "accuracy": 0.9357,
+    "false_positive_rate": 0.0684,
+    "confusion": {
+     "tn": 2627,
+     "fp": 193,
+     "fn": 0,
+     "tp": 180
+    }
+   },
+   "app_high_risk": {
+    "precision": 1.0,
+    "recall": 0.7333,
+    "f1": 0.8462,
+    "accuracy": 0.984,
+    "false_positive_rate": 0.0,
+    "confusion": {
+     "tn": 2820,
+     "fp": 0,
+     "fn": 48,
+     "tp": 132
+    }
+   }
+  }
+ },
+ "ocr": {
+  "bills": 17,
+  "lines_printed": 102,
+  "amounts_correct": 102,
+  "line_accuracy": 1.0,
+  "fields": {
+   "bill_number": 17,
+   "patient_name": 17,
+   "hospital_name": 17,
+   "total": 17,
+   "dates": 17
+  },
+  "avg_seconds": 0.7,
+  "rows": [
+   {
+    "file": "bill_01_clean_sunrise.png",
+    "lines_printed": 6,
+    "lines_read": 6,
+    "amounts_correct": 6,
+    "bill_number": true,
+    "patient_name": true,
+    "hospital_name": true,
+    "total": true,
+    "dates": true,
+    "seconds": 0.6
+   },
+   {
+    "file": "bill_02_overcharged_citycare.png",
+    "lines_printed": 6,
+    "lines_read": 6,
+    "amounts_correct": 6,
+    "bill_number": true,
+    "patient_name": true,
+    "hospital_name": true,
+    "total": true,
+    "dates": true,
+    "seconds": 0.8
+   },
+   {
+    "file": "bill_03_duplicates_sunrise.png",
+    "lines_printed": 7,
+    "lines_read": 7,
+    "amounts_correct": 7,
+    "bill_number": true,
+    "patient_name": true,
+    "hospital_name": true,
+    "total": true,
+    "dates": true,
+    "seconds": 0.6
+   },
+   {
+    "file": "bill_04_total_mismatch_citycare.png",
+    "lines_printed": 3,
+    "lines_read": 3,
+    "amounts_correct": 3,
+    "bill_number": true,
+    "patient_name": true,
+    "hospital_name": true,
+    "total": true,
+    "dates": true,
+    "seconds": 0.6
+   },
+   {
+    "file": "bill_05_inflated_cardiac_citycare.png",
+    "lines_printed": 6,
+    "lines_read": 6,
+    "amounts_correct": 6,
+    "bill_number": true,
+    "patient_name": true,
+    "hospital_name": true,
+    "total": true,
+    "dates": true,
+    "seconds": 0.7
+   },
+   {
+    "file": "new_bills/new_bill_01_maternity_citycare.png",
+    "lines_printed": 6,
+    "lines_read": 6,
+    "amounts_correct": 6,
+    "bill_number": true,
+    "patient_name": true,
+    "hospital_name": true,
+    "total": true,
+    "dates": true,
+    "seconds": 0.7
+   },
+   {
+    "file": "new_bills/new_bill_02_dengue_sunrise.png",
+    "lines_printed": 7,
+    "lines_read": 7,
+    "amounts_correct": 7,
+    "bill_number": true,
+    "patient_name": true,
+    "hospital_name": true,
+    "total": true,
+    "dates": true,
+    "seconds": 0.6
+   },
+   {
+    "file": "new_bills/new_bill_03_fracture_sunrise.png",
+    "lines_printed": 7,
+    "lines_read": 7,
+    "amounts_correct": 7,
+    "bill_number": true,
+    "patient_name": true,
+    "hospital_name": true,
+    "total": true,
+    "dates": true,
+    "seconds": 0.7
+   },
+   {
+    "file": "new_bills/new_bill_04_ent_no_insurance_citycare.png",
+    "lines_printed": 3,
+    "lines_read": 3,
+    "amounts_correct": 3,
+    "bill_number": true,
+    "patient_name": true,
+    "hospital_name": true,
+    "total": true,
+    "dates": true,
+    "seconds": 0.6
+   },
+   {
+    "file": "new_bills/new_bill_05_appendix_citycare.png",
+    "lines_printed": 6,
+    "lines_read": 6,
+    "amounts_correct": 6,
+    "bill_number": true,
+    "patient_name": true,
+    "hospital_name": true,
+    "total": true,
+    "dates": true,
+    "seconds": 0.7
+   },
+   {
+    "file": "new_bills/new_bill_06_spine_inflated_citycare.png",
+    "lines_printed": 6,
+    "lines_read": 6,
+    "amounts_correct": 6,
+    "bill_number": true,
+    "patient_name": true,
+    "hospital_name": true,
+    "total": true,
+    "dates": true,
+    "seconds": 0.7
+   },
+   {
+    "file": "ramesh_bills/ramesh_01_gastroenteritis_citycare.png",
+    "lines_printed": 7,
+    "lines_read": 7,
+    "amounts_correct": 7,
+    "bill_number": true,
+    "patient_name": true,
+    "hospital_name": true,
+    "total": true,
+    "dates": true,
+    "seconds": 0.8
+   },
+   {
+    "file": "ramesh_bills/ramesh_02_wrist_fracture_sunrise.png",
+    "lines_printed": 7,
+    "lines_read": 7,
+    "amounts_correct": 7,
+    "bill_number": true,
+    "patient_name": true,
+    "hospital_name": true,
+    "total": true,
+    "dates": true,
+    "seconds": 0.7
+   },
+   {
+    "file": "ramesh_bills/ramesh_03_kidney_stone_citycare.png",
+    "lines_printed": 7,
+    "lines_read": 7,
+    "amounts_correct": 7,
+    "bill_number": true,
+    "patient_name": true,
+    "hospital_name": true,
+    "total": true,
+    "dates": true,
+    "seconds": 0.7
+   },
+   {
+    "file": "ramesh_bills/ramesh_04_typhoid_sunrise.png",
+    "lines_printed": 7,
+    "lines_read": 7,
+    "amounts_correct": 7,
+    "bill_number": true,
+    "patient_name": true,
+    "hospital_name": true,
+    "total": true,
+    "dates": true,
+    "seconds": 0.7
+   },
+   {
+    "file": "ramesh_bills/ramesh_05_pneumonia_citycare.png",
+    "lines_printed": 7,
+    "lines_read": 7,
+    "amounts_correct": 7,
+    "bill_number": true,
+    "patient_name": true,
+    "hospital_name": true,
+    "total": true,
+    "dates": true,
+    "seconds": 0.9
+   },
+   {
+    "file": "ramesh_bills/ramesh_06_cataract_daycare_sunrise.png",
+    "lines_printed": 4,
+    "lines_read": 4,
+    "amounts_correct": 4,
+    "bill_number": true,
+    "patient_name": true,
+    "hospital_name": true,
+    "total": true,
+    "dates": true,
+    "seconds": 0.6
+   }
+  ],
+  "note": "Clean, printed sample bills. Phone photos with shadows, folds or tilt will read less well."
+ },
+ "authenticity": {
+  "fakes": 8,
+  "fakes_caught": 8,
+  "fakes_blocked": 6,
+  "genuine": 10,
+  "genuine_flagged": 0,
+  "genuine_matched": 5,
+  "confusion": {
+   "tp": 8,
+   "fn": 0,
+   "fp": 0,
+   "tn": 10
+  },
+  "rows": [
+   {
+    "file": "patient_copies/copy_01_genuine_priya_citycare.png",
+    "what": "Genuine copy of a City Care bill",
+    "genuine": true,
+    "outcome": "matched",
+    "status": "matched",
+    "failed": [],
+    "warned": [],
+    "correct": true
+   },
+   {
+    "file": "ramesh_bills/ramesh_03_kidney_stone_citycare.png",
+    "what": "Genuine copy, hospital record on file",
+    "genuine": true,
+    "outcome": "matched",
+    "status": "matched",
+    "failed": [],
+    "warned": [],
+    "correct": true
+   },
+   {
+    "file": "ramesh_bills/ramesh_04_typhoid_sunrise.png",
+    "what": "Genuine copy, hospital record on file",
+    "genuine": true,
+    "outcome": "matched",
+    "status": "matched",
+    "failed": [],
+    "warned": [],
+    "correct": true
+   },
+   {
+    "file": "ramesh_bills/ramesh_05_pneumonia_citycare.png",
+    "what": "Genuine copy, hospital record on file",
+    "genuine": true,
+    "outcome": "matched",
+    "status": "matched",
+    "failed": [],
+    "warned": [],
+    "correct": true
+   },
+   {
+    "file": "ramesh_bills/ramesh_06_cataract_daycare_sunrise.png",
+    "what": "Genuine copy, hospital record on file",
+    "genuine": true,
+    "outcome": "matched",
+    "status": "matched",
+    "failed": [],
+    "warned": [],
+    "correct": true
+   },
+   {
+    "file": "new_bills/new_bill_01_maternity_citycare.png",
+    "what": "Genuine bill, no hospital record yet",
+    "genuine": true,
+    "outcome": "awaiting",
+    "status": "pending",
+    "failed": [],
+    "warned": [],
+    "correct": true
+   },
+   {
+    "file": "new_bills/new_bill_02_dengue_sunrise.png",
+    "what": "Genuine bill, no hospital record yet",
+    "genuine": true,
+    "outcome": "awaiting",
+    "status": "pending",
+    "failed": [],
+    "warned": [],
+    "correct": true
+   },
+   {
+    "file": "new_bills/new_bill_03_fracture_sunrise.png",
+    "what": "Genuine bill, no hospital record yet",
+    "genuine": true,
+    "outcome": "awaiting",
+    "status": "pending",
+    "failed": [],
+    "warned": [],
+    "correct": true
+   },
+   {
+    "file": "new_bills/new_bill_04_ent_no_insurance_citycare.png",
+    "what": "Genuine bill, no hospital record yet",
+    "genuine": true,
+    "outcome": "awaiting",
+    "status": "pending",
+    "failed": [],
+    "warned": [],
+    "correct": true
+   },
+   {
+    "file": "new_bills/new_bill_07_appendix_citycare.pdf",
+    "what": "Genuine PDF bill, no hospital record yet",
+    "genuine": true,
+    "outcome": "awaiting",
+    "status": "pending",
+    "failed": [],
+    "warned": [],
+    "correct": true
+   },
+   {
+    "file": "fake_bills/fake_01_wrong_hospital.png",
+    "what": "Another hospital's bill",
+    "genuine": false,
+    "outcome": "blocked",
+    "status": "pending",
+    "failed": [
+     "Hospital name"
+    ],
+    "warned": [],
+    "correct": true
+   },
+   {
+    "file": "fake_bills/fake_02_wrong_patient.png",
+    "what": "Someone else's bill",
+    "genuine": false,
+    "outcome": "refused",
+    "status": "refused",
+    "failed": [
+     "This bill is for \"Rahul Verma\", not Priya Sharma. You can only add bills issued to you."
+    ],
+    "warned": [],
+    "correct": true
+   },
+   {
+    "file": "fake_bills/fake_03_reused_bill_number.png",
+    "what": "Made-up bill reusing a real bill number",
+    "genuine": false,
+    "outcome": "blocked",
+    "status": "mismatch",
+    "failed": [
+     "Matches the hospital's record"
+    ],
+    "warned": [],
+    "correct": true
+   },
+   {
+    "file": "fake_bills/fake_04_impossible_dates.png",
+    "what": "Discharge before admission",
+    "genuine": false,
+    "outcome": "blocked",
+    "status": "pending",
+    "failed": [
+     "Treatment dates"
+    ],
+    "warned": [],
+    "correct": true
+   },
+   {
+    "file": "fake_bills/fake_05_photoshop_metadata.jpg",
+    "what": "Saved by Photoshop",
+    "genuine": false,
+    "outcome": "warning",
+    "status": "pending",
+    "failed": [],
+    "warned": [
+     "No signs of editing"
+    ],
+    "correct": true
+   },
+   {
+    "file": "fake_bills/fake_06_pasted_amount.jpg",
+    "what": "Amount pasted over (\u20b936,000 \u2192 \u20b986,000)",
+    "genuine": false,
+    "outcome": "blocked",
+    "status": "mismatch",
+    "failed": [
+     "Matches the hospital's record"
+    ],
+    "warned": [],
+    "correct": true
+   },
+   {
+    "file": "fake_bills/fake_07_edited_pdf.pdf",
+    "what": "PDF re-saved by an editor",
+    "genuine": false,
+    "outcome": "warning",
+    "status": "pending",
+    "failed": [],
+    "warned": [
+     "No signs of editing"
+    ],
+    "correct": true
+   },
+   {
+    "file": "new_bills/new_bill_01_maternity_citycare.png",
+    "what": "Same bill submitted a second time",
+    "genuine": false,
+    "outcome": "blocked",
+    "status": "pending",
+    "failed": [
+     "File not uploaded before",
+     "Bill number not used before",
+     "Not a copy of another bill"
+    ],
+    "warned": [],
+    "correct": true
+   }
+  ],
+  "note": "Hand-made test set: each fake targets one check. It shows the checks work as designed, not how often they would catch a determined forger in real life."
+ },
+ "generated_at": "2026-11-19T13:07:48+00:00",
+ "treatment": {
+  "checks": [
+   {
+    "name": "Reproduces the official package rate",
+    "passed": 12,
+    "total": 12,
+    "detail": "Private hospital, tier-3 city, standard stay: the estimate equals the HBP 2022 package (+ implant)."
+   },
+   {
+    "name": "Steps add up to the total",
+    "passed": 12,
+    "total": 12,
+    "detail": "Every rupee of the total is explained by one listed step."
+   },
+   {
+    "name": "Government hospital cheapest",
+    "passed": 36,
+    "total": 36,
+    "detail": "In every city, for every treatment."
+   },
+   {
+    "name": "Bigger city costs more",
+    "passed": 48,
+    "total": 48,
+    "detail": "Tier-3 < tier-2 < metro, for every treatment and hospital type."
+   },
+   {
+    "name": "Each extra raises the price",
+    "passed": 72,
+    "total": 72,
+    "detail": "ICU day, private room, emergency, diabetes, age 60+, longer stay: each one alone, for every treatment."
+   }
+  ],
+  "grid": {
+   "treatment": "Appendix removal (laparoscopic)",
+   "code": "SG017B",
+   "package": 21700,
+   "rows": [
+    {
+     "hospital_type": "government",
+     "tier3": 8927,
+     "tier2": 10532,
+     "metro": 13803
+    },
+    {
+     "hospital_type": "private",
+     "tier3": 21700,
+     "tier2": 29646,
+     "metro": 40801
+    },
+    {
+     "hospital_type": "multispeciality",
+     "tier3": 27620,
+     "tier2": 36958,
+     "metro": 50601
+    },
+    {
+     "hospital_type": "premium",
+     "tier3": 42279,
+     "tier2": 51357,
+     "metro": 72641
+    }
+   ]
+  },
+  "standard": [
+   {
+    "name": "Appendix removal (laparoscopic)",
+    "code": "SG017B",
+    "package": 21700,
+    "implant": 0,
+    "metro_multispeciality": 50601
+   },
+   {
+    "name": "Gallbladder removal (open)",
+    "code": "SG039A",
+    "package": 31100,
+    "implant": 0,
+    "metro_multispeciality": 72520
+   },
+   {
+    "name": "Caesarean delivery",
+    "code": "SO057A",
+    "package": 22200,
+    "implant": 0,
+    "metro_multispeciality": 51767
+   },
+   {
+    "name": "Hysterectomy (abdominal)",
+    "code": "SO010A",
+    "package": 25700,
+    "implant": 0,
+    "metro_multispeciality": 59928
+   },
+   {
+    "name": "Cataract surgery (phaco)",
+    "code": "SE020A",
+    "package": 5500,
+    "implant": 6380,
+    "metro_multispeciality": 19205
+   },
+   {
+    "name": "Total knee replacement",
+    "code": "SB039A",
+    "package": 36400,
+    "implant": 60500,
+    "metro_multispeciality": 145379
+   },
+   {
+    "name": "Fracture fixation, long bone (ORIF)",
+    "code": "SB010A",
+    "package": 20800,
+    "implant": 6600,
+    "metro_multispeciality": 55102
+   },
+   {
+    "name": "Kidney stone removal (PCNL, one side)",
+    "code": "SU007A",
+    "package": 45000,
+    "implant": 0,
+    "metro_multispeciality": 104933
+   },
+   {
+    "name": "Tonsillectomy (both sides)",
+    "code": "SL016B",
+    "package": 12200,
+    "implant": 0,
+    "metro_multispeciality": 28448
+   },
+   {
+    "name": "Dengue fever",
+    "code": "MG004A",
+    "package": 9240,
+    "implant": 0,
+    "metro_multispeciality": 21547
+   },
+   {
+    "name": "Typhoid (enteric fever)",
+    "code": "MG006A",
+    "package": 9240,
+    "implant": 0,
+    "metro_multispeciality": 21547
+   },
+   {
+    "name": "Pneumonia",
+    "code": "MG016A",
+    "package": 9240,
+    "implant": 0,
+    "metro_multispeciality": 21547
+   }
+  ],
+  "range_pct": 15.7
+ }
+}

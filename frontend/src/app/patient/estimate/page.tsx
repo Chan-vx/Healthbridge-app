@@ -6,6 +6,7 @@ import { ShapBars } from "@/components/charts";
 import { Alert, Loading, PageHead, Panel, useApi } from "@/components/ui";
 import { api, CostEstimate, Profile } from "@/lib/api";
 import { FEATURE_LABELS, inr } from "@/lib/format";
+import TreatmentCost from "./TreatmentCost";
 
 function Estimate() {
   const { data: profile, error } = useApi<Profile>("/api/patients/me/profile");
@@ -47,8 +48,11 @@ function Estimate() {
 
   return (
     <>
-      <PageHead title="Treatment cost estimate"
-        sub="The cost prediction model (Gradient Boosting, chosen over Linear Regression, Random Forest and XGBoost by lowest RMSE) estimates yearly medical expenses from your profile." />
+      <p className="note-line" style={{ marginTop: 0 }}>
+        Member 1&apos;s cost prediction model (Gradient Boosting, chosen over Linear Regression, Random Forest and XGBoost by
+        lowest RMSE) estimates your total medical expenses for a year from your profile. It does not know which treatment you
+        need: use it to choose how much insurance cover to buy, and the Treatment cost tab to price a specific treatment.
+      </p>
       <div className="cols-2">
         <Panel title="Your profile" hint="Health details feed the cost model; finance details feed bill payment advice.">
           <form className="form" onSubmit={submit}>
@@ -119,6 +123,20 @@ function Estimate() {
   );
 }
 
+function Estimates() {
+  const [tab, setTab] = useState<"treatment" | "yearly">("treatment");
+  return (
+    <>
+      <PageHead title="Cost estimate" sub="What a treatment is likely to cost, and what you are likely to spend on health in a year." />
+      <div className="tabs" role="tablist">
+        <button role="tab" aria-selected={tab === "treatment"} className={tab === "treatment" ? "on" : ""} onClick={() => setTab("treatment")}>Treatment cost</button>
+        <button role="tab" aria-selected={tab === "yearly"} className={tab === "yearly" ? "on" : ""} onClick={() => setTab("yearly")}>Yearly expenses · Member 1 model</button>
+      </div>
+      {tab === "treatment" ? <TreatmentCost /> : <Estimate />}
+    </>
+  );
+}
+
 export default function Page() {
-  return <AppShell roles={["patient"]}>{() => <Estimate />}</AppShell>;
+  return <AppShell roles={["patient"]}>{() => <Estimates />}</AppShell>;
 }

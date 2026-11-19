@@ -8,7 +8,7 @@ from sqlalchemy import text
 from app.config import settings
 from app.database import Base, SessionLocal, engine
 from app.migrate import add_missing_columns
-from app.routers import auth, bills, claims, dashboard, patients, policies
+from app.routers import account, auth, bills, claims, dashboard, patients, performance, policies, treatment
 from app.services.ml import FraudModel, registry
 
 log = logging.getLogger("healthbridge")
@@ -44,7 +44,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-for r in (auth, patients, policies, bills, claims, dashboard):
+for r in (auth, patients, policies, bills, claims, dashboard, performance, treatment, account):
     app.include_router(r.router)
 
 

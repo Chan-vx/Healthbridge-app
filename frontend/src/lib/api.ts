@@ -173,6 +173,17 @@ export interface Advice {
   method: string;
 }
 
+/** Sum insured used and left in the current policy year (services/coverage.py). */
+export interface Coverage {
+  year_start: string;
+  year_end: string;
+  sum_insured: number;
+  used: number;
+  pending: number;
+  left: number;
+  claims: { id: number; claim_number: string; status: string; submitted_at: string; claim_amount: number; approved_amount: number | null; counts: boolean }[];
+}
+
 export interface Claim {
   id: number;
   claim_number: string;
@@ -203,6 +214,7 @@ export interface Claim {
   insurer_name?: string;
   fraud_threshold?: number | null;
   advice?: Advice | null;
+  coverage?: Coverage | null;
 }
 
 export interface Options {

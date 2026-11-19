@@ -1,62 +1,89 @@
 :root { --font-sans: "IBM Plex Sans"; --font-mono: "IBM Plex Mono"; }
 :root {
-  --bg: #f3f5f4;
+  --bg: #ffffff;
   --surface: #ffffff;
-  --surface-2: #f8faf9;
-  --ink: #16211e;
-  --muted: #5a6763;
-  --faint: #8a9692;
-  --line: #dde3e0;
-  --accent: #1c5c4c;
+  --surface-2: #fcf7fa;
+  --ink: #1f1720;
+  --muted: #675b63;
+  --faint: #988c94;
+  --line: #eee3e9;
+  --accent: #b8306f;
   --accent-ink: #ffffff;
-  --accent-soft: #e2efe9;
+  --accent-soft: #f9e6ef;
   --good: #1f7a4d;
   --good-soft: #e3f3ea;
   --warn: #9a5b0e;
   --warn-soft: #fbefdc;
   --bad: #b3261e;
   --bad-soft: #fbe7e5;
-  --info: #2c5d8f;
-  --info-soft: #e5eef8;
-  --chart-1: #2a78d6;
-  --chart-2: #eb6834;
+  --info: #8a2a5c;
+  --info-soft: #f6e8f0;
+  --chart-1: #b8306f;
+  --chart-2: #ff5a3c;
   --chart-3: #1baf7a;
   --st-good: #0ca30c;
   --st-warn: #fab219;
   --st-bad: #d03b3b;
-  --chart-4: #8a9692;
-  --shadow: 0 1px 2px rgba(22, 33, 30, 0.06);
+  --chart-4: #988c94;
+  --shadow: 0 1px 2px rgba(60, 20, 40, 0.06);
   --radius: 8px;
   color-scheme: light;
 }
 
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
-    --bg: #0f1513;
-    --surface: #161e1b;
-    --surface-2: #1b2521;
-    --ink: #e3eae7;
-    --muted: #9eaba6;
-    --faint: #6f7c78;
-    --line: #2a3531;
-    --accent: #6fc1a6;
-    --accent-ink: #0f1513;
-    --accent-soft: #1b2f28;
+    --bg: #151014;
+    --surface: #1d161b;
+    --surface-2: #241b21;
+    --ink: #f1e8ed;
+    --muted: #b6a7b0;
+    --faint: #807178;
+    --line: #362a31;
+    --accent: #ea7fae;
+    --accent-ink: #151014;
+    --accent-soft: #3b1d2c;
     --good: #6fcf97;
     --good-soft: #17301f;
     --warn: #e6b062;
     --warn-soft: #33270f;
     --bad: #f08b80;
     --bad-soft: #361a17;
-    --info: #8bb7e6;
-    --info-soft: #182636;
-    --chart-1: #3987e5;
-    --chart-2: #d95926;
+    --info: #e59bc0;
+    --info-soft: #351c2a;
+    --chart-1: #d9599a;
+    --chart-2: #ff7457;
     --chart-3: #199e70;
-    --chart-4: #6f7c78;
+    --chart-4: #807178;
     --shadow: none;
     color-scheme: dark;
   }
+}
+
+:root[data-theme="dark"] {
+  --bg: #151014;
+  --surface: #1d161b;
+  --surface-2: #241b21;
+  --ink: #f1e8ed;
+  --muted: #b6a7b0;
+  --faint: #807178;
+  --line: #362a31;
+  --accent: #ea7fae;
+  --accent-ink: #151014;
+  --accent-soft: #3b1d2c;
+  --good: #6fcf97;
+  --good-soft: #17301f;
+  --warn: #e6b062;
+  --warn-soft: #33270f;
+  --bad: #f08b80;
+  --bad-soft: #361a17;
+  --info: #e59bc0;
+  --info-soft: #351c2a;
+  --chart-1: #d9599a;
+  --chart-2: #ff7457;
+  --chart-3: #199e70;
+  --chart-4: #807178;
+  --shadow: none;
+  color-scheme: dark;
 }
 
 * { box-sizing: border-box; }
@@ -219,3 +246,4 @@ input:focus, select:focus, textarea:focus { outline: 2px solid var(--accent-soft
 pre.raw { white-space: pre-wrap; font-size: 12px; background: var(--surface-2); border: 1px solid var(--line); border-radius: 6px; padding: 12px; max-height: 280px; overflow: auto; margin: 0; }
 .risk-dial { display: flex; align-items: baseline; gap: 10px; }
 .risk-dial .big { font-family: var(--font-mono), Consolas, monospace; font-size: 34px; font-weight: 700; }
+.linklike { font: inherit; background: none; border: 0; padding: 0; color: var(--accent); cursor: pointer; text-decoration: underline; }

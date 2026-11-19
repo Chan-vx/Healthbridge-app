@@ -10,7 +10,7 @@ from pathlib import Path
 from typing import Optional
 
 from fastapi import APIRouter, Depends, File, Form, HTTPException, Response, UploadFile
-from sqlalchemy import or_, select
+from sqlalchemy import and_, or_, select
 from sqlalchemy.orm import Session
 
 from app.config import ML_DIR, settings
@@ -28,7 +28,7 @@ from app.schemas import (
     TextBillRequest,
 )
 from app.security import get_current_user, require_roles
-from app.services import verification
+from app.services import coverage, verification
 from app.services.ml import OCRUnavailableError, registry
 
 router = APIRouter(prefix="/api/bills", tags=["member 3 · bills & finance"])
@@ -57,12 +57,25 @@ def _resolve_parties(db: Session, uploader: User, patient_id: Optional[int], hos
     return uploader, hospital
 
 
-def _policy_dict(policy: Optional[Policy]) -> Optional[dict]:
+def _policy_dict(db: Session, policy: Optional[Policy]) -> Optional[dict]:
     if policy is None:
         return None
+    # the insurer's limit is what is left of the yearly sum insured, not the whole of it
     return {"deductible": policy.deductible, "co_insurance_pct": policy.co_insurance_pct,
             "copay_flat": policy.copay_flat, "room_rent_cap": policy.room_rent_cap,
-            "sum_insured": policy.sum_insured}
+            "sum_insured": coverage.left(db, policy)}
+
+
+def _separate_sum_insured_limit(cost: dict, policy: Optional[Policy]) -> dict:
+    """Member 3's calculator adds whatever is above the insurer's limit to the co-insurance share; show it
+    on its own line, so the patient can see the year's sum insured ran out."""
+    if policy is None:
+        return cost
+    co_insurance = round((cost["covered_amount"] - cost["deductible_applied"]) * policy.co_insurance_pct / 100, 2)
+    over = round(cost["co_insurance_patient_share"] - co_insurance, 2)
+    if over <= 0.01:
+        return cost
+    return {**cost, "co_insurance_patient_share": co_insurance, "sum_insured_shortfall": over}
 
 
 def _duplicate_flags(items: list[dict], flags: list[dict]) -> list[Optional[dict]]:
@@ -91,11 +104,11 @@ def _create_bill(db: Session, uploader: User, patient: User, hospital: Optional[
     profile = get_profile(db, patient)
 
     result = analyzer.analyze(
-        items, city_tier, hospital_type, _policy_dict(policy),
+        items, city_tier, hospital_type, _policy_dict(db, policy),
         {"monthly_income": profile.monthly_income, "existing_monthly_debt": profile.existing_monthly_debt,
          "has_credit_card": profile.has_credit_card},
     )
-    detection, cost = result["detection"], result["cost_breakdown"]
+    detection, cost = result["detection"], _separate_sum_insured_limit(result["cost_breakdown"], policy)
     duplicates = _duplicate_flags(items, detection["duplicate_charges"])
 
     hospital_name = meta.get("hospital_name") or (hospital.name if hospital else None)
@@ -104,6 +117,7 @@ def _create_bill(db: Session, uploader: User, patient: User, hospital: Optional[
                                                     meta.get("discharge_date"))
     authenticity = _assess(db, uploader.role, patient, hospital, policy, items, meta, source, file_path, file_hash,
                            content_hash)
+    _refuse_other_hospitals_bill(db, uploader, hospital, meta)
     _refuse_other_patients_bill(uploader, patient, meta, authenticity)
 
     bill = Bill(
@@ -142,8 +156,13 @@ def _create_bill(db: Session, uploader: User, patient: User, hospital: Optional[
 
 
 def shared_with_patient():
-    """Bills the patient can see: everything except hospital-only records."""
+    """Bills shared beyond the hospital: everything except hospital-only records."""
     return or_(Bill.record_only.is_(None), Bill.record_only.is_(False))
+
+
+def visible_to_patient():
+    """Bills in the patient's account: shared with them and not deleted by them."""
+    return and_(shared_with_patient(), Bill.patient_deleted_at.is_(None))
 
 
 def _reveal_matched_record(db: Session, match: Optional[dict]):
@@ -153,6 +172,24 @@ def _reveal_matched_record(db: Session, match: Optional[dict]):
         record = db.get(Bill, match["record_id"])
         if record is not None and record.record_only:
             record.record_only = False
+
+
+def _refuse_other_hospitals_bill(db: Session, uploader: User, hospital: Optional[Hospital], meta: dict):
+    """A bill printed by another hospital on HealthBridge is filed with that hospital, not this one: usually
+    the wrong hospital was chosen. Refused, nothing saved, and the message names the right hospital. A name
+    that matches no registered hospital is only flagged by the Hospital name check."""
+    printed = meta.get("hospital_name")
+    if hospital is None or not printed or verification.name_similarity(printed, hospital.name) >= 0.6:
+        return
+    other = max(db.scalars(select(Hospital).where(Hospital.id != hospital.id)),
+                key=lambda h: verification.name_similarity(printed, h.name), default=None)
+    if other is None or verification.name_similarity(printed, other.name) < 0.85:
+        return
+    if uploader.role == "hospital":
+        raise HTTPException(422, f"This bill was issued by {other.name}, not {hospital.name}. A hospital can only "
+                                 f"add its own bills.")
+    raise HTTPException(422, f"This bill is from {other.name}, but you chose {hospital.name}. Choose {other.name} "
+                             f"and upload it again.")
 
 
 def _refuse_other_patients_bill(uploader: User, patient: User, meta: dict, authenticity: dict):
@@ -244,7 +281,7 @@ def _scoped(user: User):
     query = select(Bill)
     shared = shared_with_patient()  # hospital-only records stay hidden
     if user.role == "patient":
-        return query.where(Bill.patient_id == user.id, shared)
+        return query.where(Bill.patient_id == user.id, visible_to_patient())
     if user.role == "hospital":
         return query.where(Bill.hospital_id == user.hospital.id)
     if user.role == "insurer":
@@ -395,6 +432,19 @@ def error_level(bill_id: int, user: User = Depends(require_roles("hospital", "in
 
 
 # ---------------------------------------------------------------- verify
+
+
+@router.delete("/{bill_id}", status_code=204, summary="Patient: delete a bill from your account (the hospital keeps it)")
+def delete_bill(bill_id: int, user: User = Depends(require_roles("patient")), db: Session = Depends(get_db)):
+    bill = _get_bill(db, user, bill_id)
+    claim = db.scalar(select(Claim).where(Claim.bill_id.in_([bill.id, bill.matched_bill_id or -1]),
+                                          Claim.status.in_(("submitted", "approved"))))
+    if claim is not None:
+        raise HTTPException(409, f"Claim {claim.claim_number} on this bill is still open. The bill can be deleted "
+                                 "once the insurer has settled or rejected it.")
+    bill.patient_deleted_at = datetime.now(timezone.utc)
+    db.commit()
+    return Response(status_code=204)
 
 
 @router.post("/{bill_id}/verification", response_model=BillDetailOut,

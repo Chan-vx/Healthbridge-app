@@ -30,7 +30,7 @@ from typing import Optional
 
 import numpy as np
 from PIL import Image, ImageChops, ImageOps
-from sqlalchemy import select
+from sqlalchemy import or_, select
 from sqlalchemy.orm import Session
 
 from app.models import Bill, Hospital, Policy, User
@@ -208,7 +208,6 @@ def tampering_signals(file_path: str) -> list[str]:
 
 # Characters OCR confuses in bill numbers; mapped the same way on both sides before comparing
 _OCR_LOOKALIKES = str.maketrans("OILSBZ", "011582")
-NUMBER_MATCH = 0.9     # similarity of two bill numbers that are the same number misread by OCR
 LINE_MATCH = 0.75      # similarity of two descriptions of the same line
 AMOUNT_TOLERANCE = 1.0  # rupees
 
@@ -219,7 +218,8 @@ def bill_number_key(number: Optional[str]) -> str:
 
 def numbers_match(a: Optional[str], b: Optional[str]) -> bool:
     ka, kb = bill_number_key(a), bill_number_key(b)
-    return bool(ka and kb) and (ka == kb or SequenceMatcher(None, ka, kb).ratio() >= NUMBER_MATCH)
+    # exact after mapping lookalikes: CCH-2026-02011 and CCH-2026-02411 are different bills, however similar
+    return bool(ka and kb) and ka == kb
 
 
 def find_record(db: Session, hospital: Hospital, bill_number: Optional[str],
@@ -232,13 +232,8 @@ def find_record(db: Session, hospital: Hospital, bill_number: Optional[str],
                                Bill.bill_number.is_not(None))
     if exclude_id is not None:
         query = query.where(Bill.id != exclude_id)
-    best, best_score = None, 0.0
-    for record in db.scalars(query.order_by(Bill.id)):
-        other = bill_number_key(record.bill_number)
-        score = 1.0 if other == key else SequenceMatcher(None, key, other).ratio()
-        if score > best_score:
-            best, best_score = record, score
-    return best if best_score >= NUMBER_MATCH else None
+    return next((record for record in db.scalars(query.order_by(Bill.id))
+                 if bill_number_key(record.bill_number) == key), None)
 
 
 def compare_with_record(items: list[dict], meta: dict, record: Bill) -> list[dict]:
@@ -320,7 +315,9 @@ def _show(value) -> str:
 
 
 def _other_bills(exclude_ids=()):
-    query = select(Bill).where(Bill.verification_status != "disputed")
+    # a copy the patient deleted does not make their re-upload a repeat; the hospital's own records always count
+    query = select(Bill).where(Bill.verification_status != "disputed",
+                               or_(Bill.patient_deleted_at.is_(None), Bill.verification_status == "hospital_uploaded"))
     return query.where(Bill.id.not_in(exclude_ids)) if exclude_ids else query
 
 

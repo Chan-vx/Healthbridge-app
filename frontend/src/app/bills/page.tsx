@@ -3,11 +3,15 @@
 import { useRouter } from "next/navigation";
 import { FormEvent, useState } from "react";
 import AppShell from "@/components/AppShell";
+import DeleteBill from "@/components/DeleteBill";
 import { Alert, CheckBadge, ClaimStatusBadge, Empty, Loading, PageHead, Panel, PaymentBadge, useApi, VerificationBadge } from "@/components/ui";
 import { api, BillDetail, BillSummary, Hospital, Person, User } from "@/lib/api";
 import { date, inr } from "@/lib/format";
 
 type Mode = "file" | "sample" | "manual";
+
+/** Compare hospital names ignoring case and punctuation (OCR reads the printed name in capitals). */
+const sameName = (s: string) => s.toLowerCase().replace(/[^a-z0-9]/g, "");
 
 function NewBill({ user }: { user: User }) {
   const router = useRouter();
@@ -127,7 +131,9 @@ function NewBill({ user }: { user: User }) {
 
 function Bills({ user }: { user: User }) {
   const router = useRouter();
-  const { data, error } = useApi<BillSummary[]>("/api/bills");
+  const { data, error, setData } = useApi<BillSummary[]>("/api/bills");
+  const isPatient = user.role === "patient";
+  const [deleting, setDeleting] = useState<BillSummary | null>(null);
   const canUpload = user.role === "patient" || user.role === "hospital";
   return (
     <>
@@ -136,6 +142,14 @@ function Bills({ user }: { user: User }) {
       <div className="stack">
         {canUpload && <NewBill user={user} />}
         <Panel title="All bills" flush>
+          {deleting && data && (
+            <div className="alert error" style={{ margin: "12px 16px" }}>
+              <DeleteBill key={deleting.id} asking billId={deleting.id}
+                prompt={<>Delete the <b>{deleting.hospital_name || "bill"}</b> bill of {date(deleting.created_at)} ({inr(deleting.total_billed)}) from your account?</>}
+                onCancel={() => setDeleting(null)}
+                onDeleted={() => { setData(data.filter((x) => x.id !== deleting.id)); setDeleting(null); }} />
+            </div>
+          )}
           {!data ? <div className="panel-body"><Loading error={error} /></div> : data.length === 0 ? <Empty>No bills yet.</Empty> : (
             <div className="table-wrap">
               <table>
@@ -143,7 +157,7 @@ function Bills({ user }: { user: User }) {
                   <tr>
                     <th>Date</th>{user.role !== "patient" && <th>Patient</th>}<th>Hospital</th>
                     <th className="num">Billed</th><th className="num">Insurance</th><th className="num">Patient</th>
-                    <th className="num">Flagged</th><th>Source</th><th>Checks</th><th>Claim</th><th>Payment</th>
+                    <th className="num">Flagged</th><th>Source</th><th>Checks</th><th>Claim</th><th>Payment</th>{isPatient && <th />}
                   </tr>
                 </thead>
                 <tbody>
@@ -151,7 +165,9 @@ function Bills({ user }: { user: User }) {
                     <tr key={b.id} className="clickable" onClick={() => router.push(`/bills/${b.id}`)}>
                       <td>{date(b.created_at)}</td>
                       {user.role !== "patient" && <td>{b.patient_name}</td>}
-                      <td>{b.hospital_name || "—"}</td>
+                      <td>{b.registered_hospital || b.hospital_name || "—"}
+                        {b.registered_hospital && b.hospital_name && sameName(b.hospital_name) !== sameName(b.registered_hospital) && (
+                          <div className="small" style={{ color: "var(--bad)" }}>Bill says {b.hospital_name}</div>)}</td>
                       <td className="num">{inr(b.total_billed)}</td>
                       <td className="num">{inr(b.insurance_pays)}</td>
                       <td className="num">{inr(b.patient_out_of_pocket)}</td>
@@ -160,6 +176,8 @@ function Bills({ user }: { user: User }) {
                       <td><CheckBadge status={b.authenticity} /></td>
                       <td><ClaimStatusBadge status={b.claim_status} /></td>
                       <td><PaymentBadge status={b.payment_status} /></td>
+                      {isPatient && <td><button className="btn ghost small" title="Delete this bill from your account. The hospital keeps its copy."
+                        onClick={(e) => { e.stopPropagation(); setDeleting(b); }}>Delete</button></td>}
                     </tr>
                   ))}
                 </tbody>

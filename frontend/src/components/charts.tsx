@@ -6,6 +6,11 @@ import {
   CartesianGrid,
   Cell,
   Legend,
+  Line,
+  LineChart,
+  ReferenceArea,
+  Scatter,
+  ScatterChart,
   ReferenceLine,
   Tooltip,
   XAxis,
@@ -124,5 +129,93 @@ export function SplitBar({ parts }: { parts: { label: string; value: number; col
         ))}
       </div>
     </div>
+  );
+}
+
+/** ROC curves of one or more scores against the same test labels, with the chance diagonal. */
+export function RocChart({ series }: { series: { name: string; color: string; auc: number; points: { fpr: number; tpr: number }[] }[] }) {
+  const pctTick = (v: number) => `${Math.round(v * 100)}%`;
+  return (
+    <div>
+      <Sized height={280}>{(w) => (
+        <LineChart width={w} height={280} margin={{ top: 8, right: 16, bottom: 22, left: 4 }}>
+          <CartesianGrid stroke="var(--line)" />
+          <XAxis type="number" dataKey="fpr" domain={[0, 1]} ticks={[0, 0.25, 0.5, 0.75, 1]} tick={axis} tickFormatter={pctTick}
+            axisLine={false} tickLine={false} label={{ value: "False alarms (false positive rate)", position: "insideBottom", offset: -12, fontSize: 11, fill: "var(--muted)" }} />
+          <YAxis type="number" domain={[0, 1]} ticks={[0, 0.25, 0.5, 0.75, 1]} tick={axis} tickFormatter={pctTick} axisLine={false} tickLine={false} width={60}
+            label={{ value: "Frauds caught", angle: -90, position: "insideLeft", offset: 0, fontSize: 11, fill: "var(--muted)" }} />
+          <ReferenceLine segment={[{ x: 0, y: 0 }, { x: 1, y: 1 }]} stroke="var(--faint)" strokeDasharray="4 4" />
+          <Tooltip {...tooltipStyle} cursor={{ stroke: "var(--faint)" }} labelFormatter={(v) => `False alarms ${pctTick(Number(v))}`}
+            formatter={(v, n) => [pctTick(Number(v)), `${n} · caught`]} />
+          {series.map((s) => (
+            <Line key={s.name} data={s.points} dataKey="tpr" name={s.name} type="linear" stroke={s.color} strokeWidth={2}
+              dot={false} activeDot={{ r: 4, stroke: "var(--surface)", strokeWidth: 2 }} isAnimationActive={false} />
+          ))}
+        </LineChart>
+      )}</Sized>
+      <div className="legend">
+        {series.map((s) => <span key={s.name}><i style={{ background: s.color }} />{s.name} <b className="num" style={{ color: "var(--ink)" }}>AUC {s.auc.toFixed(3)}</b></span>)}
+        <span><i style={{ background: "var(--faint)" }} />Guessing (AUC 0.5)</span>
+      </div>
+    </div>
+  );
+}
+
+type Pt = { x: number; y: number };
+
+/** Two groups of points on shared axes; optional y = x line or a shaded rectangle to explain the result. */
+export function TwoGroupScatter({ groups, xLabel, yLabel, format, diagonal, region }: {
+  groups: { name: string; color: string; points: Pt[] }[];
+  xLabel: string;
+  yLabel: string;
+  format: (n: number) => string;
+  diagonal?: number;
+  region?: { x1: number; x2: number; y1: number; y2: number; label: string };
+}) {
+  return (
+    <div>
+      <Sized height={300}>{(w) => (
+        <ScatterChart width={w} height={300} margin={{ top: 8, right: 16, bottom: 22, left: 4 }}>
+          <CartesianGrid stroke="var(--line)" />
+          <XAxis type="number" dataKey="x" name={xLabel} tick={axis} tickFormatter={format} axisLine={false} tickLine={false}
+            domain={diagonal ? [0, diagonal] : ["auto", "auto"]}
+            label={{ value: xLabel, position: "insideBottom", offset: -12, fontSize: 11, fill: "var(--muted)" }} />
+          <YAxis type="number" dataKey="y" name={yLabel} tick={axis} tickFormatter={format} axisLine={false} tickLine={false} width={58}
+            domain={diagonal ? [0, diagonal] : ["auto", "auto"]}
+            label={{ value: yLabel, angle: -90, position: "insideLeft", offset: 4, fontSize: 11, fill: "var(--muted)" }} />
+          {region && <ReferenceArea x1={region.x1} x2={region.x2} y1={region.y1} y2={region.y2} fill="var(--chart-2)" fillOpacity={0.08}
+            stroke="var(--chart-2)" strokeDasharray="4 4" label={{ value: region.label, position: "top", fontSize: 11, fill: "var(--ink)" }} />}
+          {diagonal && <ReferenceLine segment={[{ x: 0, y: 0 }, { x: diagonal, y: diagonal }]} stroke="var(--faint)" strokeDasharray="4 4" />}
+          <Tooltip {...tooltipStyle} cursor={{ strokeDasharray: "3 3", stroke: "var(--faint)" }} formatter={(v, n) => [format(Number(v)), String(n)]} />
+          {groups.map((g) => (
+            <Scatter key={g.name} name={g.name} data={g.points} fill={g.color} fillOpacity={0.75} stroke="var(--surface)" strokeWidth={1}
+              shape="circle" isAnimationActive={false} />
+          ))}
+        </ScatterChart>
+      )}</Sized>
+      <div className="legend">
+        {groups.map((g) => <span key={g.name}><i style={{ background: g.color }} />{g.name} <span className="muted">({g.points.length})</span></span>)}
+        {diagonal && <span><i style={{ background: "var(--faint)" }} />Perfect prediction</span>}
+      </div>
+    </div>
+  );
+}
+
+/** One measure per feature, largest first (a single series, so no legend). */
+export function ImportanceBars({ items, format = (n) => `${Math.round(n * 100)}%` }: {
+  items: { label: string; value: number }[];
+  format?: (n: number) => string;
+}) {
+  const height = 24 + items.length * 30;
+  return (
+    <Sized height={height}>{(w) => (
+      <BarChart width={w} height={height} data={items} layout="vertical" margin={{ top: 2, right: 40, bottom: 2, left: 8 }} barCategoryGap={6}>
+        <XAxis type="number" hide domain={[0, "dataMax"]} />
+        <YAxis type="category" dataKey="label" tick={{ ...axis, fill: "var(--ink)" }} width={170} axisLine={false} tickLine={false} />
+        <Tooltip {...tooltipStyle} formatter={(v) => [format(Number(v)), "Importance"]} />
+        <Bar dataKey="value" fill="var(--chart-1)" radius={[0, 4, 4, 0]} maxBarSize={16} isAnimationActive={false}
+          label={{ position: "right", fontSize: 11, fill: "var(--muted)", formatter: (v: unknown) => format(Number(v)) }} />
+      </BarChart>
+    )}</Sized>
   );
 }

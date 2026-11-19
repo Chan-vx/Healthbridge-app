@@ -131,6 +131,80 @@ hospital confirmation is the decisive control. Fake test bills: `test_samples/fa
 Existing databases are upgraded on start (`backend/app/migrate.py` adds the new columns). For
 the demo data with the new examples, reset with `docker compose down -v`.
 
+## Clearing test data
+
+Every patient, hospital and insurer account has **Clear my records** (sidebar, above Log out) with
+two options: **Reset to demo data** (the account's demo examples come back, test additions go) and
+**Delete everything**. A patient's records are their bills, claims, payments and estimates; a
+hospital's are the bills at that hospital with their claims and payments; an insurer's are its
+claims. Logins, profiles and policies are kept. Records shared with other accounts (a patient's bill
+at a hospital) disappear from both. To reset an insurer's claims, reset the patients or hospitals
+first if their bills were deleted. `backend/app/services/account_records.py` rebuilds the demo data
+by running the seed into an in-memory database (about 20 seconds, once per server start).
+
+A patient can also **delete a single bill** from their account (Delete on each row of My bills, or
+on the bill's page). It is hidden from the patient only (`Bill.patient_deleted_at`); the hospital and
+the insurer keep it, so a deleted fake still shows in the hospital's queue. A bill with an open claim
+(submitted or approved) cannot be deleted, and a re-upload of a deleted copy is not flagged as a repeat.
+
+## Insurance: yearly sum insured
+
+The sum insured is a **yearly** limit (`backend/app/services/coverage.py`). A policy year runs from
+the policy's start date to its next anniversary. Approved and settled claims use it; submitted claims
+hold their amount until the insurer decides. New bills are split with only what is left, a claim is
+cut to what is left when it is filed, and the insurer cannot approve more than is left (the claim page
+shows the figure). Patients see their plan, the sum insured used and left, and this year's claims
+under **My insurance**.
+
+Still simplified: the deductible and room rent cap apply per bill (real policies usually apply the
+deductible per year and the room cap per day), and policies have no waiting periods or exclusions.
+
+## Treatment cost estimate
+
+Member 1's model predicts a person's **yearly** medical expenses from six profile inputs; it never
+sees the treatment. The **Cost estimate** page therefore has a second tab, **Treatment cost**, which
+prices one treatment at one kind of hospital (`backend/app/services/treatment_cost.py`,
+`POST /api/cost/treatment`), line by line:
+
+| Step | Based on |
+|---|---|
+| Package rate for the treatment (12 treatments, e.g. SB039A knee replacement ₹36,400 + implant ₹60,500) | AB PM-JAY HBP 2022: Tier-3 rates, general ward, all inclusive except implants |
+| Hospital type and city | Multipliers learnt by Member 3's fair-price model |
+| Longer stay | HBP 2022 ward rate ₹2,310/day, scaled the same way |
+| Room category | Fair-price model's room-rent prediction |
+| ICU (2 × ward rate), emergency (+15%), other illnesses, age 60+ | **Assumptions**, labelled on the page |
+
+The range is ± the fair-price model's error on unseen data (15.7%). For a patient with a policy,
+Member 3's cost calculator splits the estimate into what the insurer and the patient pay. Package
+rates are what the government scheme pays; private hospitals often charge more.
+
+## Model performance
+
+The **Model performance** page (every role's menu) shows how each model does on data it was not
+trained on: metrics, confusion matrices, ROC curves, the fraud threshold choice, and the limits.
+`backend/evaluation/evaluate_models.py` recreates each member's own train/test split (same file,
+columns and random seed), scores the model the app runs, and writes
+`backend/app/data/model_performance.json`, which the page reads. Re-run it after retraining a model
+(about a minute; OCR and the authenticity uploads are the slow part):
+
+```bash
+docker compose run --rm -v ./backend:/srv -v ./test_samples:/srv/test_samples backend python evaluation/evaluate_models.py
+docker compose up -d --build backend
+```
+
+| Model | Test data | Main result |
+|---|---|---|
+| Cost (Member 1) | 268 patients, notebook's 80/20 split | R² 0.897, average error ₹2.1 lakh/year |
+| Fraud (Member 2) | 900 claims, stratified 80/20 split | 54/54 frauds caught, 2 false alarms; 5-fold CV F1 0.996 |
+| Fair price (Member 3) | 1,200 line items, 80/20 split | R² 0.957, 15.7% error (data noise 14.4%) |
+| Overcharge anomaly (Member 3) | 3,000 new line items | ROC-AUC 0.979, precision/recall 0.73 |
+| OCR (Member 3) | 17 sample bills, 102 lines | 102/102 amounts and every field read |
+| Authenticity (Member 4) | 8 fakes + 10 genuine uploads | 8/8 fakes caught, 0 genuine flagged |
+
+The fraud dataset's labels follow claim amount and income almost exactly (a two-cut-off rule also
+scores F1 1.0), so its near-perfect scores reflect the dataset; the page says so.
+`backend/ml_modules/cost/data/insurance.csv` is Member 1's training data, added for this evaluation.
+
 ## Integration notes (what had to change)
 
 - **One scikit-learn version (1.9.0).** Models were saved with 1.9.0 (M1), 1.6.1 (M2) and

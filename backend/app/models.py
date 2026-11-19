@@ -155,6 +155,8 @@ class Bill(Base):
     # a hospital's own record, hidden from the patient (and insurer) until the patient uploads a
     # matching copy or the hospital files a claim on it; None = visible
     record_only: Mapped[Optional[bool]] = mapped_column(Boolean, nullable=True)
+    # the patient deleted the bill from their account; the hospital and insurer still have it
+    patient_deleted_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True), nullable=True)
     match_result: Mapped[Optional[dict]] = mapped_column(JSON, nullable=True)
     verification_note: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
     verified_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True), nullable=True)

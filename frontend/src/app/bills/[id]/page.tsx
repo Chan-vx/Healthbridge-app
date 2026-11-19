@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { FormEvent, useEffect, useState } from "react";
 import AppShell from "@/components/AppShell";
+import DeleteBill from "@/components/DeleteBill";
 import { SplitBar } from "@/components/charts";
 import {
   Alert, CheckBadge, ClaimStatusBadge, Kpi, Loading, PageHead, Panel, PaymentBadge, SeverityBadge, useApi, VerificationBadge,
@@ -243,11 +244,12 @@ function BillView({ user }: { user: User }) {
 
   return (
     <>
-      <PageHead title={bill.hospital_name || "Bill"}
+      <PageHead title={bill.registered_hospital || bill.hospital_name || "Bill"}
         sub={`${bill.patient_name} · ${bill.bill_number ? `Bill ${bill.bill_number} · ` : ""}${bill.admission_date ? `${bill.admission_date} → ${bill.discharge_date} · ` : ""}analysed ${date(bill.created_at)} · ${titleCase(bill.city_tier)}, ${bill.hospital_type} pricing`}>
         <VerificationBadge status={bill.verification_status} recordOnly={bill.record_only} />
         <ClaimStatusBadge status={bill.claim_status} />
         <PaymentBadge status={bill.payment_status} />
+        {user.role === "patient" && <DeleteBill billId={bill.id} onDeleted={() => router.push("/bills")} />}
         {bill.claim_id && (user.role === "insurer" && ["submitted", "approved"].includes(bill.claim_status || "")
           ? <Link className="btn small" href={`/claims/${bill.claim_id}`}>{bill.claim_status === "submitted" ? "Decide on claim" : "Settle claim"}</Link>
           : <Link className="btn ghost small" href={`/claims/${bill.claim_id}`}>View claim</Link>)}
@@ -338,7 +340,7 @@ function BillView({ user }: { user: User }) {
         </Panel>
 
         <div className="cols-2">
-          <Panel title="Who pays what" hint={bill.policy_id ? "Deductible → caps → co-insurance → copay" : "No active policy when this bill was analysed"}>
+          <Panel title="Who pays what" hint={bill.policy_id ? "Caps → deductible → co-insurance → sum insured left this year → copay" : "No active policy when this bill was analysed"}>
             <div className="stack">
               <SplitBar parts={[
                 { label: "Insurance", value: bill.insurance_pays, color: "var(--chart-1)", text: inr(bill.insurance_pays) },
@@ -351,10 +353,16 @@ function BillView({ user }: { user: User }) {
                 <dt>Covered amount</dt><dd>{inrPaise(c.covered_amount)}</dd>
                 <dt>Deductible</dt><dd>{inrPaise(c.deductible_applied)}</dd>
                 <dt>Co-insurance (patient share)</dt><dd>{inrPaise(c.co_insurance_patient_share)}</dd>
+                {c.sum_insured_shortfall > 0 && <><dt>Above the sum insured left this year</dt><dd>{inrPaise(c.sum_insured_shortfall)}</dd></>}
                 <dt>Copay</dt><dd>{inrPaise(c.copay)}</dd>
                 <dt className="total">Insurance pays</dt><dd className="total">{inrPaise(c.insurance_pays)}</dd>
                 <dt className="total">Patient pays</dt><dd className="total">{inrPaise(c.patient_out_of_pocket)}</dd>
               </dl>
+              {user.role === "patient" && bill.policy_id && (
+                <p className="note-line" style={{ margin: 0 }}>
+                  How each step is decided: <Link href="/patient/insurance#terms">your plan&apos;s terms and conditions</Link>.
+                </p>
+              )}
             </div>
           </Panel>
 

@@ -416,3 +416,154 @@ def test_hospital_only_record_is_hidden_until_the_patient_uploads_a_matching_cop
     assert copy.json()["verification_status"] == "matched" and copy.json()["matched_bill_id"] == record["id"]
     assert record["id"] in seen("patient") and record["id"] in seen("insurer")
     assert claim(client, actors["patient"], record["id"]).status_code == 201
+
+
+def test_bill_numbers_match_only_the_same_number():
+    from app.services.verification import numbers_match
+    assert numbers_match("CCH-2026-02011", "cch 2026 02011")
+    assert numbers_match("CCH-2O26-O2O11", "CCH-2026-02011")  # OCR read 0 as O
+    assert not numbers_match("CCH-2026-02011", "CCH-2026-02411")  # one digit apart: another patient's bill
+
+
+def test_treatment_cost_estimate(client, actors):
+    catalogue = client.get("/api/cost/treatments", headers=actors["patient"]).json()
+    assert any(t["key"] == "knee" and t["package"] == 36400 for t in catalogue["treatments"])
+
+    def estimate(**body):
+        r = client.post("/api/cost/treatment", headers=actors["patient"],
+                        json={"treatment": "appendix", "city_tier": "tier3", "hospital_type": "private", **body})
+        assert r.status_code == 200, r.text
+        return r.json()
+
+    base = estimate()
+    assert base["steps"][0]["amount"] == 21700  # the package rate itself at a tier-3 private hospital
+    assert base["low"] < base["total"] < base["high"]
+    assert sum(s["amount"] for s in base["steps"]) == base["total"]
+    # each factor only adds: bigger city, ICU, private room, emergency, illnesses
+    worse = estimate(city_tier="metro", icu_days=1, room="private", emergency=True, conditions=["diabetes"])
+    assert worse["total"] > base["total"]
+    assert {"City", "ICU", "Room category", "Emergency admission", "Diabetes"} <= {s["factor"] for s in worse["steps"]}
+    assert estimate(hospital_type="government")["total"] < base["total"]
+    knee = estimate(treatment="knee")
+    assert any(s["factor"] == "Implant" and s["amount"] == 60500 for s in knee["steps"])
+    assert client.post("/api/cost/treatment", headers=actors["patient"],
+                       json={"treatment": "nose-job", "city_tier": "metro", "hospital_type": "private"}).status_code == 422
+
+
+def test_sum_insured_is_a_yearly_limit(client, actors):
+    patient, patient_user = register(client, "kiran@test.in", "patient", full_name="Kiran Rao")
+    r = client.post("/api/policies", headers=actors["insurer"], json={
+        "patient_email": "kiran@test.in", "deductible": 0, "co_insurance_pct": 0, "copay_flat": 0, "sum_insured": 100000})
+    assert r.status_code == 201, r.text
+    backdate_policies("kiran@test.in", days=30)
+
+    def hospital_bill(number, surgery):
+        r = client.post("/api/bills/manual", headers=actors["hospital"], json={
+            "patient_id": patient_user["id"], "bill_number": number,
+            "items": [{"description": "Surgery - Hernia Repair", "amount": surgery},
+                      {"description": "Consultation - Surgeon", "amount": 1000}]})
+        assert r.status_code == 201, r.text
+        return r.json()
+
+    def claim(bill_id):
+        r = client.post("/api/claims", headers=actors["hospital"], json={
+            "bill_id": bill_id, "claim_type": "Inpatient", "provider_specialty": "General Practice"})
+        assert r.status_code == 201, r.text
+        return r.json()
+
+    first = claim(hospital_bill("SI-001", 59000)["id"])
+    assert first["claim_amount"] == 60000
+    assert first["coverage"]["left"] == 100000  # this claim itself not counted
+    me = client.get("/api/policies/me", headers=patient).json()["coverage"]
+    assert (me["pending"], me["left"]) == (60000, 40000)  # submitted claims hold their amount
+
+    # the next bill is split with only what is left of the year's sum insured
+    second = hospital_bill("SI-002", 69000)
+    assert second["insurance_pays"] == 40000 and second["patient_out_of_pocket"] == 30000
+    assert second["cost_breakdown"]["sum_insured_shortfall"] == 30000  # shown on its own line, not as co-insurance
+    second_claim = claim(second["id"])
+    assert second_claim["claim_amount"] == 40000
+
+    # approving the first in full leaves nothing; the insurer cannot approve beyond the limit
+    assert client.post(f"/api/claims/{first['id']}/decision", headers=actors["insurer"],
+                       json={"action": "approve"}).json()["status"] == "approved"
+    me = client.get("/api/policies/me", headers=patient).json()["coverage"]
+    assert (me["used"], me["pending"], me["left"]) == (60000, 40000, 0)
+    r = client.post(f"/api/claims/{second_claim['id']}/decision", headers=actors["insurer"], json={"action": "approve"})
+    assert r.status_code == 200  # 40,000 was held for it, so it still fits
+    # a third bill finds the sum insured used up
+    third = hospital_bill("SI-003", 9000)
+    assert third["insurance_pays"] == 0 and third["patient_out_of_pocket"] == 10000
+
+
+def test_clear_my_records(client, actors):
+    login = client.post("/api/auth/login", json={"email": "kiran@test.in", "password": PASSWORD}).json()
+    kiran = {"Authorization": f"Bearer {login['access_token']}"}
+    before = client.get("/api/account/records", headers=kiran).json()["counts"]
+    assert before["bills"] == 3 and before["claims"] == 2  # from the sum insured test
+
+    r = client.post("/api/account/records/clear", headers=kiran, json={"action": "delete"})
+    assert r.status_code == 200 and r.json()["removed"] == before
+    assert all(v == 0 for v in client.get("/api/account/records", headers=kiran).json()["counts"].values())
+    hospital_bills = client.get("/api/bills", headers=actors["hospital"]).json()
+    assert not any((b["bill_number"] or "").startswith("SI-") for b in hospital_bills)  # gone for the hospital too
+    assert client.get("/api/policies/me", headers=kiran).json()["policy"] is not None  # the policy is kept
+
+    # Kiran is not in the demo data, so a reset puts nothing back
+    r = client.post("/api/account/records/clear", headers=kiran, json={"action": "reset"})
+    assert r.status_code == 200 and r.json()["restored"]["bills"] == 0
+    assert client.post("/api/account/records/clear", json={"action": "delete"}).status_code == 401
+
+
+def test_patient_deletes_a_bill_from_their_account_only(client, actors):
+    hospital_id = next(h["id"] for h in client.get("/api/hospitals", headers=actors["patient"]).json()
+                       if h["name"] == "City Care Multispeciality Hospital")
+    rows = [{"description": "Consultation - ENT", "amount": 900}, {"description": "Audiometry Test", "amount": 1400},
+            {"description": "Tablet Cetirizine 10mg", "amount": 120}]
+    bill = client.post("/api/bills/manual", headers=actors["patient"], json={"hospital_id": hospital_id, "items": rows}).json()
+
+    def listed(headers):
+        return any(b["id"] == bill["id"] for b in client.get("/api/bills", headers=headers).json())
+
+    assert client.delete(f"/api/bills/{bill['id']}", headers=actors["hospital"]).status_code == 403  # patients only
+    assert client.delete(f"/api/bills/{bill['id']}", headers=actors["patient"]).status_code == 204
+    assert not listed(actors["patient"])
+    assert client.get(f"/api/bills/{bill['id']}", headers=actors["patient"]).status_code == 404
+    assert listed(actors["hospital"])  # the hospital keeps it, still waiting for confirmation
+    assert client.get(f"/api/bills/{bill['id']}", headers=actors["hospital"]).json()["verification_status"] == "pending"
+    # uploading the same bill again is not treated as a repeat of the deleted copy
+    again = client.post("/api/bills/manual", headers=actors["patient"], json={"hospital_id": hospital_id, "items": rows}).json()
+    assert all(c["status"] != "fail" for c in again["checks"]), again["checks"]
+
+    # a bill with an open claim cannot be deleted until the insurer settles or rejects it
+    claimed = client.post("/api/bills/manual", headers=actors["hospital"], json={
+        "patient_id": actors["patient_id"], "bill_number": "DEL-001",
+        "items": [{"description": "Surgery - Tonsillectomy", "amount": 30000}, {"description": "Consultation - ENT", "amount": 900}]}).json()
+    c = claim(client, actors["hospital"], claimed["id"])
+    assert c.status_code == 201, c.text
+    r = client.delete(f"/api/bills/{claimed['id']}", headers=actors["patient"])
+    assert r.status_code == 409 and "still open" in r.json()["detail"]
+    client.post(f"/api/claims/{c.json()['id']}/decision", headers=actors["insurer"], json={"action": "reject"})
+    assert client.delete(f"/api/bills/{claimed['id']}", headers=actors["patient"]).status_code == 204
+
+
+def test_bill_from_another_registered_hospital_is_refused(client, actors):
+    register(client, "sunrise@test.in", "hospital", organization_name="Sunrise General Hospital", city="Coimbatore",
+             city_tier="tier2", hospital_type="private")
+    hospitals = {h["name"]: h["id"] for h in client.get("/api/hospitals", headers=actors["patient"]).json()}
+    raw = TEXT_BILL.format(hospital="SUNRISE GENERAL HOSPITAL", patient="Ramesh Kumar", number="SGH-T-001",
+                           room=9800, total=14100, admission=day(9), discharge=day(7))
+    count = len(client.get("/api/bills", headers=actors["patient"]).json())
+    # the patient chose City Care for a Sunrise bill: refused, and told which hospital to choose
+    r = client.post("/api/bills/text", headers=actors["patient"],
+                    json={"hospital_id": hospitals["City Care Multispeciality Hospital"], "raw_text": raw})
+    assert r.status_code == 422, r.text
+    assert "Choose Sunrise General Hospital" in r.json()["detail"]
+    assert len(client.get("/api/bills", headers=actors["patient"]).json()) == count  # nothing saved
+    # a hospital cannot add another hospital's bill either
+    r = client.post("/api/bills/text", headers=actors["hospital"], json={"patient_id": actors["patient_id"], "raw_text": raw})
+    assert r.status_code == 422 and "can only add its own bills" in r.json()["detail"]
+    # filed under the right hospital, it is accepted
+    r = client.post("/api/bills/text", headers=actors["patient"],
+                    json={"hospital_id": hospitals["Sunrise General Hospital"], "raw_text": raw})
+    assert r.status_code == 201, r.text

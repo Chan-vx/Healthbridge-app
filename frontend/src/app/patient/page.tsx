@@ -49,7 +49,7 @@ function Dashboard() {
             <Empty>No estimate yet. <Link href="/patient/estimate">Fill in your profile</Link> to get one.</Empty>
           )}
         </Panel>
-        <Panel title="Insurance policy">
+        <Panel title="Insurance policy" actions={<Link className="btn ghost small" href="/patient/insurance">Details and sum insured left</Link>}>
           {policy ? (
             <dl className="kv">
               <dt>Policy</dt><dd>{policy.policy_number}</dd>

@@ -299,3 +299,4 @@ class ClaimOut(ORMModel):
     insurer_name: Optional[str] = None
     fraud_threshold: Optional[float] = None
     advice: Optional[dict] = None  # Claim Decision Engine recommendation
+    coverage: Optional[dict] = None  # sum insured used and left this policy year, this claim not counted

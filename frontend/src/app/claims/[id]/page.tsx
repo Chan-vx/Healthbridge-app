@@ -52,8 +52,15 @@ function Decision({ claim, onDone }: { claim: Claim; onDone: (c: Claim) => void 
         {claim.status === "submitted" && (
           <>
             <label className="field">Approved amount (₹)
-              <input id="approved_amount" type="number" min={0} max={claim.claim_amount} value={amount} onChange={(e) => setAmount(e.target.value)} />
+              <input id="approved_amount" type="number" min={0} max={Math.min(claim.claim_amount, claim.coverage?.left ?? Infinity)} value={amount} onChange={(e) => setAmount(e.target.value)} />
             </label>
+            {claim.coverage && (
+              <p className={claim.coverage.left < claim.claim_amount ? "alert error" : "note-line"} style={{ margin: 0 }}>
+                Sum insured left for this claim: <b>{inr(claim.coverage.left)}</b> of {inr(claim.coverage.sum_insured)} this policy year
+                ({inr(claim.coverage.used)} paid or approved, {inr(claim.coverage.pending)} held by other open claims).
+                {claim.coverage.left < claim.claim_amount && " You cannot approve more than this."}
+              </p>
+            )}
             <label className="field">Note to hospital (optional)
               <textarea id="note" rows={2} value={note} onChange={(e) => setNote(e.target.value)} style={{ fontFamily: "inherit" }} />
             </label>

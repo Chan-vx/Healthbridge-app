@@ -5,7 +5,7 @@ from typing import Optional
 
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy import select
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, object_session
 
 from app.database import get_db
 from app.models import Bill, Claim, Policy, User
@@ -13,6 +13,7 @@ from app.routers.bills import _get_bill
 from app.routers.patients import get_profile
 from app.schemas import ClaimDecision, ClaimOut, ClaimRequest
 from app.security import get_current_user, require_roles
+from app.services import coverage
 from app.services.claim_decision import recommend
 from app.services.ml import registry
 from app.services.verification import DUPLICATE_CHECKS
@@ -29,6 +30,9 @@ def claim_out(c: Claim) -> ClaimOut:
     out.insurer_name = c.insurer.name
     out.fraud_threshold = registry.fraud.threshold if registry.fraud else None
     out.advice = recommend(c)
+    if c.policy is not None:
+        # what the policy has left for this claim (the claim itself not counted)
+        out.coverage = coverage.usage(object_session(c), c.policy, exclude_claim_id=c.id)
     return out
 
 
@@ -80,6 +84,19 @@ def submit_claim(body: ClaimRequest, user: User = Depends(require_roles("hospita
         raise HTTPException(409, f"Claim {existing.claim_number} already exists for this bill.")
 
     policy = db.get(Policy, bill.policy_id)
+    # the sum insured is yearly: claims filed since this bill was analysed may have used some of it
+    available = coverage.left(db, policy)
+    if available <= 0:
+        raise HTTPException(422, f"The sum insured of policy {policy.policy_number} is used up for this policy year; "
+                                 "nothing more can be claimed until it renews.")
+    if bill.insurance_pays > available:
+        shortfall = round(bill.insurance_pays - available, 2)
+        bill.insurance_pays = available
+        bill.patient_out_of_pocket = round(bill.patient_out_of_pocket + shortfall, 2)
+        bill.cost_breakdown = {**(bill.cost_breakdown or {}), "insurance_pays": available,
+                               "patient_out_of_pocket": bill.patient_out_of_pocket, "sum_insured_shortfall": shortfall}
+        if bill.payment_status == "paid":
+            bill.payment_status = "unpaid"
     profile = get_profile(db, bill.patient)
     now = datetime.now(timezone.utc)
     location = bill.hospital.city if bill.hospital and bill.hospital.city else "Unknown"
@@ -146,6 +163,10 @@ def decide_claim(claim_id: int, body: ClaimDecision, user: User = Depends(requir
         amount = claim.claim_amount if body.approved_amount is None else body.approved_amount
         if amount > claim.claim_amount:
             raise HTTPException(422, "The approved amount cannot exceed the claimed amount.")
+        available = coverage.left(db, claim.policy, exclude_claim_id=claim.id)
+        if amount > available:
+            raise HTTPException(422, f"Only ₹{available:,.0f} of the sum insured is left this policy year; "
+                                     "approve that amount or less.")
         claim.status, claim.approved_amount = "approved", amount
     elif body.action == "reject":
         claim.status, claim.approved_amount = "rejected", 0.0

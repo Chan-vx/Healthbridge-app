@@ -5,34 +5,44 @@ import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { clearSession, getSession, HOME, Role, User } from "@/lib/api";
 
+const MODELS = { href: "/models", label: "Model performance" };
+// accounts that own records they can clear (app/services/account_records.py)
+const CAN_CLEAR: Role[] = ["patient", "hospital", "insurer"];
+
 const NAV: Record<Role, { href: string; label: string }[]> = {
   patient: [
     { href: "/patient", label: "Overview" },
     { href: "/patient/estimate", label: "Cost estimate" },
+    { href: "/patient/insurance", label: "My insurance" },
     { href: "/bills", label: "My bills" },
     { href: "/claims", label: "Claims" },
+    MODELS,
   ],
   hospital: [
     { href: "/hospital", label: "Overview" },
     { href: "/bills", label: "Bills" },
     { href: "/claims", label: "Claims" },
+    MODELS,
   ],
   insurer: [
     { href: "/insurance", label: "Overview" },
     { href: "/claims", label: "Claims queue" },
     { href: "/insurance/history", label: "Claims history" },
     { href: "/insurance/policies", label: "Policies" },
+    MODELS,
   ],
   finance: [
     { href: "/finance", label: "Finance" },
     { href: "/bills", label: "Bills" },
     { href: "/claims", label: "Claims" },
+    MODELS,
   ],
   admin: [
     { href: "/admin", label: "Admin" },
     { href: "/finance", label: "Finance" },
     { href: "/bills", label: "Bills" },
     { href: "/claims", label: "Claims" },
+    MODELS,
   ],
 };
 
@@ -95,7 +105,10 @@ export default function AppShell({ roles, children }: { roles: Role[]; children:
             <div className="who">{user.full_name}</div>
             <div className="role">{user.email}</div>
           </div>
-          <button className="btn ghost small" onClick={logout}>Log out</button>
+          <div className="btn-row">
+            {CAN_CLEAR.includes(user.role) && <Link className="btn ghost small" href="/account/records">Clear my records</Link>}
+            <button className="btn ghost small" onClick={logout}>Log out</button>
+          </div>
         </div>
       </aside>
       <main className="main">{children(user)}</main>

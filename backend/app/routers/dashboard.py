@@ -8,7 +8,7 @@ from sqlalchemy.orm import Session
 
 from app.database import get_db
 from app.models import Bill, Claim, CostEstimate, Hospital, Payment, Policy, User
-from app.routers.bills import shared_with_patient, summary_out
+from app.routers.bills import summary_out, visible_to_patient
 from app.routers.claims import claim_out
 from app.routers.policies import active_policy, policy_out
 from app.security import require_roles
@@ -89,7 +89,7 @@ def _monthly_claims(claims: list[Claim]) -> list[dict]:
 
 @router.get("/patient")
 def patient_dashboard(user: User = Depends(require_roles("patient")), db: Session = Depends(get_db)):
-    all_bills = db.scalars(select(Bill).where(Bill.patient_id == user.id, shared_with_patient())
+    all_bills = db.scalars(select(Bill).where(Bill.patient_id == user.id, visible_to_patient())
                           .order_by(Bill.created_at.desc())).all()
     bills = _originals(all_bills)
     claims = db.scalars(select(Claim).where(Claim.patient_id == user.id).order_by(Claim.submitted_at.desc())).all()
